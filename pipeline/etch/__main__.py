@@ -22,6 +22,7 @@ def main(argv=None):
     prepare.add_argument('--output',type=Path,required=True)
     prepare.add_argument('--points',type=int,default=5000)
     prepare.add_argument('--anchors',type=int,default=6000)
+    prepare.add_argument('--seed',type=int,default=1)
     prepare.add_argument('--markers',type=Path,default=ROOT/'configs/mhr-markers-86.json')
     prepare.add_argument('--development',action='store_true')
     train=sub.add_parser('train')
@@ -31,6 +32,10 @@ def main(argv=None):
     train.add_argument('--steps',type=int,default=1000)
     train.add_argument('--points',type=int,default=5000)
     train.add_argument('--width',type=int,default=32)
+    train.add_argument('--head-width',type=int,default=128)
+    train.add_argument('--learning-rate',type=float,default=1e-4)
+    train.add_argument('--rotation-augmentation',action='store_true',help='Optional SO3 augmentation; disabled in released ETCH loader')
+    train.add_argument('--resume',type=Path)
     train.add_argument('--device',default='cpu')
     train.add_argument('--development',action='store_true')
     predict=sub.add_parser('predict')
@@ -47,6 +52,15 @@ def main(argv=None):
     oracle.add_argument('--markers',type=Path,default=ROOT/'configs/mhr-markers-86.json')
     oracle.add_argument('--mhr-model',type=Path,default=ROOT/'assets/mhr_model.pt')
     oracle.add_argument('--output',type=Path,default=ROOT/'runs/etch/oracle-check')
+    evaluation=sub.add_parser('evaluate',help='Score neural predictions against a paired body, not oracle markers')
+    evaluation.add_argument('--pair',type=Path,required=True)
+    evaluation.add_argument('--checkpoint',type=Path,required=True)
+    evaluation.add_argument('--output',type=Path,required=True)
+    evaluation.add_argument('--input',type=Path,default=ROOT/'inputs/MHR-male-10027')
+    evaluation.add_argument('--mhr-model',type=Path,default=ROOT/'assets/mhr_model.pt')
+    evaluation.add_argument('--device',default='cpu')
+    evaluation.add_argument('--development',action='store_true')
+    evaluation.add_argument('--no-fit-body',action='store_true')
     args=parser.parse_args(argv)
     from ..avatar_clothing import load_body,write_json
     if args.command=='doctor':
@@ -73,14 +87,22 @@ def main(argv=None):
         if args.output.suffix!='.npz':parser.error('--output must end with .npz')
         if min(args.points,args.anchors)<1:parser.error('Points and anchors must be positive')
         result=prepare_pair(args.input,args.fit_folder,args.markers,args.output,
-            count=args.points,anchor_count=args.anchors,development=args.development)
+            count=args.points,anchor_count=args.anchors,development=args.development,seed=args.seed)
         print(json.dumps(result,indent=2));return 0
     if args.command=='train':
         from .runtime import train
         paths=[args.pairs] if args.pairs.is_file() else sorted(args.pairs.glob('*.npz'))
-        report=train(paths,args.markers,args.output,args.steps,args.points,args.width,args.device,args.development)
+        report=train(paths,args.markers,args.output,args.steps,args.points,args.width,args.device,args.development,
+            learning_rate=args.learning_rate,rotation_augmentation=args.rotation_augmentation,
+            resume=args.resume,head_width=args.head_width)
         print(json.dumps({k:v for k,v in report.items() if k not in ('history','marker_definition')},indent=2))
         return 0
+    if args.command=='evaluate':
+        from .evaluation import evaluate
+        report=evaluate(args.pair,args.checkpoint,args.output,device=args.device,
+            development=args.development,input_body=args.input,mhr_model=args.mhr_model,fit_body=not args.no_fit_body)
+        print(json.dumps(report,indent=2))
+        return 2 if report['body_fit_status'] in ('failed','needs_review') else 0
     if args.command=='predict':
         from .runtime import predict
         markers,valid,definition,report=predict(args.scan,args.checkpoint,args.output,

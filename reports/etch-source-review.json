@@ -28,7 +28,14 @@
   "implementation": "independent MHR-native method adaptation; not a reproduction of the released EPN/PointTransformer architecture",
   "upstream_checkpoint_compatible": false,
   "restricted_weights_or_dataset_examples_used": false,
-  "backbone_test_scope": "discrete 60-rotation equivariance, finite forward/backward and multitask losses on CPU",
+  "backbone_test_scope": "discrete 60-rotation direction equivariance and invariant pooled encoder features; complete XYZ scalar heads are not strictly rotation-invariant; finite gradients on CPU",
+  "adapter_revision": "mhr-tightness-v2",
+  "released_code_corrections": [
+    "Restore XYZ inputs and relative XYZ positions to scalar heads",
+    "Disable SO3 augmentation by default, matching commented-out augmentation in released loader",
+    "Use a soft label mixture of linear confidence scores, matching released confidence head",
+    "Retain nonnegative magnitude and zero-skin direction masking as explicit stability choices"
+  ],
   "fitter_scope": "fixed native MHR neutral pose; first 20 identity coefficients plus global rigid similarity",
   "articulated_pose_recovery_implemented": false,
   "rgb_video_to_3d_implemented": false,

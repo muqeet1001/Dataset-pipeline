@@ -1,10 +1,12 @@
 """Fresh MHR-native tightness network following ETCH's intermediate tasks.
 
-The compact PyTorch group-point encoder and distance attention are independent
+The compact PyTorch group-point encoder and spatial attention are independent
 implementations, NOT the authors' EPN/PointTransformer architecture. The head
 separation, 60 rotations, SO(3) projection and four supervised tasks follow the
 method. Only the discrete icosahedral rotations have a tested equivariance
-guarantee; arbitrary articulated-pose generalization requires evaluation.
+guarantee for directions. The released PointTransformer heads also receive XYZ;
+their outputs are not strictly rotation-invariant. Articulated-pose and arbitrary
+scan-orientation generalization require evaluation.
 """
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -65,32 +67,40 @@ class GroupPointEncoder(nn.Module):
 
 
 class ScalarContext(nn.Module):
-    """Vector-channel point attention using invariant distances for position."""
+    """PointTransformer-style vector attention with relative XYZ positions.
+
+    ETCH's released scalar heads concatenate XYZ and use 3D relative positions.
+    Treating the complete heads as rotation-invariant incorrectly removed the
+    spatial information needed to separate anatomical marker labels.
+    """
     def __init__(self,width):
         super().__init__();self.q=nn.Linear(width,width);self.k=nn.Linear(width,width);self.v=nn.Linear(width,width)
-        self.position=nn.Sequential(nn.Linear(1,width),nn.SiLU(),nn.Linear(width,width))
+        self.position=nn.Sequential(nn.Linear(3,width),nn.SiLU(),nn.Linear(width,width))
         self.attention=nn.Sequential(nn.Linear(width,width),nn.SiLU(),nn.Linear(width,width))
         self.out=nn.Sequential(nn.Linear(width,width),nn.SiLU(),nn.Linear(width,width))
 
     def forward(self,points,features,indices):
-        distance=(neighbours(points,indices)-points[:,:,None]).norm(dim=-1,keepdim=True)
-        position=self.position(distance)
-        logits=self.attention(self.q(features)[:,:,None]-neighbours(self.k(features),indices)+position)
+        relative=neighbours(points,indices)-points[:,:,None]
+        position=self.position(relative)
+        logits=self.attention(neighbours(self.k(features),indices)-self.q(features)[:,:,None]+position)
         value=neighbours(self.v(features),indices)+position
         return features+self.out((logits.softmax(dim=2)*value).sum(2))
 
 
 class TightnessNetwork(nn.Module):
-    def __init__(self,markers=86,width=32,neighbours_count=12,radius=.4):
+    def __init__(self,markers=86,width=32,neighbours_count=12,radius=.4,head_width=128):
         super().__init__()
         if width%4:raise ValueError('Feature width must be divisible by four')
-        self.configuration={'markers':markers,'width':width,'neighbours_count':neighbours_count,'radius':radius}
+        self.configuration={'markers':markers,'width':width,'neighbours_count':neighbours_count,'radius':radius,
+                            'head_width':head_width}
         self.encoder=GroupPointEncoder(width,radius)
         layer=nn.TransformerEncoderLayer(width,4,width*2,dropout=0,batch_first=True,activation='gelu')
         self.direction_attention=nn.TransformerEncoder(layer,2,enable_nested_tensor=False)
         self.direction_weights=nn.Linear(width,1)
-        self.magnitude_context=ScalarContext(width);self.marker_context=ScalarContext(width)
-        self.magnitude=nn.Linear(width,1);self.labels=nn.Linear(width,markers);self.confidence=nn.Linear(width,markers)
+        self.scalar_input=nn.Sequential(nn.Linear(width+3,head_width),nn.LayerNorm(head_width),nn.SiLU())
+        self.magnitude_context=nn.ModuleList([ScalarContext(head_width) for _ in range(2)])
+        self.marker_context=nn.ModuleList([ScalarContext(head_width) for _ in range(2)])
+        self.magnitude=nn.Linear(head_width,1);self.labels=nn.Linear(head_width,markers);self.confidence=nn.Linear(head_width,markers)
 
     def forward(self,points):
         if points.ndim!=3 or points.shape[-1]!=3 or not torch.isfinite(points).all():
@@ -108,9 +118,16 @@ class TightnessNetwork(nn.Module):
             directions.append(rotation[:,:,2])
         direction=torch.cat(directions).reshape(b,n,3)
         invariant=group.mean(2)
-        magnitude=F.softplus(self.magnitude(self.magnitude_context(points,invariant,indices)))
-        context=self.marker_context(points,invariant,indices);logits=self.labels(context)
-        confidence=(logits.softmax(-1)*self.confidence(context).sigmoid()).sum(-1)
+        centered=points-points.mean(1,keepdim=True)
+        spatial=self.scalar_input(torch.cat([invariant,centered/self.configuration['radius']],-1))
+        magnitude_context=spatial;context=spatial
+        for layer in self.magnitude_context:magnitude_context=layer(centered,magnitude_context,indices)
+        for layer in self.marker_context:context=layer(centered,context,indices)
+        magnitude=F.softplus(self.magnitude(magnitude_context))
+        logits=self.labels(context)
+        # Released confidence head uses a soft label mixture of linear scores,
+        # not a sigmoid per class. Inference voting rejects nonpositive scores.
+        confidence=(logits.softmax(-1)*self.confidence(context)).sum(-1)
         return {'direction':direction,'magnitude_scaled':magnitude.squeeze(-1),
             'label_logits':logits,'confidence':confidence,
             'vectors_inward':direction*(magnitude/10)}
