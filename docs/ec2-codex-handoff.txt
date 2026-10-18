@@ -1,0 +1,290 @@
+CONTINUE DATASET-PIPELINE ON EC2
+
+You are continuing my existing project. Implement and validate the remaining
+VStitcher clothing automation on this EC2 machine. Do the work, run real pilots,
+fix native integration problems, and commit each meaningful implementation step.
+Do not stop at a plan or call a mocked simulation a successful native test.
+
+1. MY GOAL AND SCOPE
+
+I am building a synthetic dataset for a future model that recovers a body mesh
+from video. The current task is only the initial dataset-to-body-to-clothing
+pipeline. Do not start video generation, camera rendering, animation, Unreal,
+model training, or another future stage yet.
+
+The permanent requirement is one program invocation that processes records one
+at a time:
+  measurement record -> official Meta MHR body mesh -> VStitcher imported avatar
+  -> random sex-matched garment -> tight, medium and loose simulations
+  -> saved meshes/scenes and metadata ready for the next stage -> next record.
+
+Male records use the male garment catalog; female records use the female catalog.
+Use one randomly chosen garment style across the three fits for a subject. Save
+the random seed and selections so rerunning/resuming reproduces the selection.
+Choose actual graded sizes that fit the body, rather than assuming S/M/L always
+means tight/medium/loose. There must be no manual file import or button clicking
+for each subject during the final batch run. One-time setup and pilot calibration
+are acceptable. Preserve verified work and resume after interruption.
+
+2. REPOSITORY AND GIT
+
+Private repository: https://github.com/muqeet1001/Dataset-pipeline
+Owner: muqeet1001. Main branch: main.
+Implementation baseline before this handoff: 82687788a0c4188faa5bc9ed35f933c7853e3a60.
+Fetch current main; this handoff itself is a later documentation commit.
+
+If a checkout already exists, inspect git status and local instructions first.
+Preserve unrelated local changes. Do not reset, force-push, or overwrite existing
+EC2 projects. If absent, clone into a dedicated working directory, for example
+C:\Dataset-pipeline. Use normal GitHub authentication if the private repo needs it.
+Use a codex/ branch if creating a branch. Commit every meaningful step and push
+the work; report the branch and commit hashes. Do not put credentials in commits.
+
+Relevant history:
+  7cf5ee4  Step 1 done: automated dataset-to-MHR mesh pipeline.
+  830df00  Prepared VStitcher clothing integration and three fit variants.
+  35386ed  Fixed portable OBJ LF bytes and refreshed verified checksums.
+  8268778  Confirmed real MHR avatar import in the native VStitcher GUI.
+
+Read first:
+  README.md
+  docs/step-1-done.md
+  docs/step-2-vstitcher.md
+  docs/pipeline-contract.md
+  reports/step-2-preparation-validation.json
+  reports/step-2-native-import-check.json
+
+3. STEP 1 IS COMPLETE; PRESERVE IT
+
+ANSUR II measurements were imported from Twinnie-Inc/TWINNIE, branch
+Mahmoud-Dataset-5.8, pinned commit 2f901e81447103dba946b301d844f0fd6476a710.
+Original source directory: Scripts/Dataset/fixtures/ansur2.
+The CSVs are already in data/raw/ansur2 with provenance and hashes. Do not fetch
+or recreate them unnecessarily. There are 6,068 records: 4,082 male and 1,986
+female, 108 columns. CSV encoding is Latin-1. Raw linear values are millimetres;
+raw weightkg is tenths of a kilogram. The importer converts to cm and kg.
+
+The full official Meta MHR source is vendored unmodified in third_party/MHR,
+pinned at d96fafa33bbf018647c70c3525e91f53e79d2a14. This is Meta's MHR, not an
+Unreal MetaHuman project. Its TorchScript release backend is already integrated;
+do not replace it or require a new PyMomentum build without a demonstrated need.
+
+Release: v1.0.1. Model path: assets/mhr_model.pt, ignored by Git.
+Model SHA-256:
+352e271a6c42729c68554ceaea0c955e866970160c31e35506d782dc0f7377bc
+The archive URL and verified archive hash are in third_party/mhr-provenance.json.
+scripts/download_mhr_assets.py verifies the archive and extracts the model. Reuse
+an existing verified model/archive if present; a fresh clone excludes these large
+assets. The model is roughly 696 MB and the release archive is several GB.
+
+Meshes have 18,439 vertices and 36,874 triangles, centimetre coordinates, Y up,
+and feet grounded at Y=0. The fitter optimizes the first 20 of 45 identity inputs
+and uniformly scales the result to standing height. It fits chest, waist and hip
+mesh-section perimeter proxies. Pose and expression retain neutral defaults.
+These are estimated bodies: the other measurements and mass are retained but
+unfitted. Do not claim exact recovery of every body dimension. Saved skeleton
+coordinates are labelled unscaled; apply the recorded transform if using them
+to place anchors on the exported body.
+
+Two accepted, reproducible real examples already exist:
+  examples/fitted/ansur2_male_10027     height about 177.6 cm
+  examples/fitted/ansur2_female_10037   height 156.0 cm
+Each contains body.ply, mhr-inputs.npz, source-record.json and fit-report.json.
+The matching unchanged OBJ avatars are in examples/vstitcher-preparation.
+The full 6,068-mesh batch has NOT been run.
+
+The original environment used Python 3.12.2 and CPU PyTorch 2.10.0. The EC2
+environment is not assumed identical; inspect it before installing anything.
+The last project test result was 27 passing tests. Tests for native BwApi used
+an explicit synthetic test double, not real VStitcher cloth simulation.
+
+4. WHAT WAS ACTUALLY VERIFIED ON EC2
+
+The existing Windows EC2 RDP session opens VStitcher 2026.2.1 (55315). It was
+already signed in. Its desktop license was shown as Professional; this does not
+prove VStitcher Engine/CLI or Open Platform access. No CLI installation or API
+execution has been verified yet. No account password belongs in this handoff.
+
+The real male example folder was copied through the RDP file clipboard to:
+  C:\Users\Administrator\Desktop\ansur2_male_10027
+Its avatar.obj was imported via File > Import into a fresh garment scene.
+The actual MHR body was visible upright in its A pose. Edit Avatar displayed
+Distance From Ground = 0 cm. The scene was left open for the user to inspect.
+Imported dimensions, topology and remote file checksum have not been independently
+verified. Anchor points were visible but their anatomical placement was NOT
+validated. No MHR reference VSA was saved as part of this pilot.
+
+No actual garment dressing, three-size simulation, native scene export, or API
+script run was completed for an MHR body. A different prior experiment dressed an
+official sample shirt on a vendor Adam avatar; that does NOT validate this task.
+An earlier attempt to use \\tsclient\C was rejected; the file clipboard transfer
+worked. Inspect the current desktop without discarding the user's open work.
+
+Possible existing assets to inspect, not guaranteed complete garment catalogs:
+  Desktop working garment named Abdul-Pipeline-Official-Tshirt-20261018
+  Downloads folder for man-Basic-t-shirt.bw (possibly a numbered duplicate)
+  An official man Basic t-shirt.bw sample.
+The desktop has other Twinnie/Marvelous Designer projects. Preserve their files;
+use independent working copies for this pipeline. No measured male/female garment
+catalog is currently enrolled in this repository.
+
+5. EXISTING STEP 2 CODE; EXTEND IT
+
+pipeline/__main__.py: run and clothes commands.
+pipeline/runner.py: sequential processing, locks, checkpoints, immutable handoffs,
+pending delivery state and consumer receipt validation.
+pipeline/clothing.py: catalog/config parsing, seeded sex-matched garment selection,
+three distinct graded-size choices, exact OBJ export/reload checks, per-fit working
+copies, native CLI subprocess execution, export hashes and resume validation.
+pipeline/vstitcher_job.py: standalone native BwApi script for VStitcher-CLI.
+tests/test_clothing.py and tests/test_runner.py: relevant existing tests.
+
+The native script currently checks input hashes, opens a copied garment, verifies
+the native size ID/name, selects that size, imports/selects the MHR avatar, calls
+GarmentPrepare, requests synchronous uncached GarmentDressEx iterations, calls
+GarmentFinish, checks current avatar/size, saves dressed.bw, and calls
+RenderExport3DObject for scene.glb and garment.glb. It closes the working garment.
+It can optionally use a compatible one-avatar reference VSA via AvatarImportVSA
+and AvatarImportEx. Do not assume any call's current signature, licensing, unit
+handling, defaults or behavior works until tested against the installed runtime.
+Audit and fix the script using the official docs and native results.
+
+The CLI subprocess receives the job file through the environment variable
+DATASET_PIPELINE_VSTITCHER_JOB and runs --script pipeline/vstitcher_job.py.
+Each attempt has a fresh directory plus stdout/stderr and native-result.json.
+The expected per-variant outputs are dressed.bw, scene.glb (body and garment),
+and garment.glb (garment only), with SHA-256 receipts and source linkage.
+
+Current native success is deliberately called simulation_completed_unreviewed
+with physical_fit_verified=false. Export/API success alone does not prove good
+cloth fit. Pending preparation must never be counted as completed simulation.
+
+6. REAL CATALOG AND CONFIGURATION
+
+Copy configs/clothing.example.json to configs/clothing.local.json and
+configs/garment-catalog.example.json to configs/garment-catalog.local.json.
+Set the local config catalog to garment-catalog.local.json. Set
+vstitcher.cli_executable to the actual executable path, with timeout and iteration
+settings suitable for the native pilot. Configure avatar_reference_vsa only if a
+compatible MHR reference is actually prepared and validated.
+
+The shipped catalog is empty. Schema: configs/garment-catalog.schema.json.
+Enroll real .bw/.vsgx files for both sexes. Each entry needs its ID, sex, file path,
+SHA-256, primary measurement, measurement provenance, and actual native size
+IDs/names with measured garment rest circumferences in centimetres. Discover IDs
+from the real garment. Do not invent measurements or enroll synthetic fixtures.
+Fabric and sewing/arrangement information must support actual native dressing.
+If no suitable garments are available, look for official Browzwear samples before
+requesting the precise missing files. Do not assume an ungraded garment supports
+three graded-size conditions.
+
+Primary measurements supported: chestcircumference, waistcircumference,
+buttockcircumference. The selector compares the achieved body proxy circumference
+with the measured rest garment circumference, not an unfitted source target.
+Default intended ease bands: tight [0%,6%), medium [6%,14%), loose [14%,30%).
+These are initial non-compression targets, not universal physical-fit rules.
+Review the actual fit, fabric, pose and placement. Do not stretch the body or
+arbitrarily rescale clothing to fabricate fit labels. Insufficient size coverage
+must stay pending with a reason.
+
+*.local.json, garments/, assets/, runs/ and .venv/ are ignored. Keep passwords,
+tokens and licensed garment binaries out of Git. Commit code, documentation,
+non-sensitive validation evidence and provenance instead.
+
+7. RECOMMENDED EXECUTION ORDER AND COMMANDS
+
+Use PowerShell on this Windows host. From the repository root, first inspect the
+installed VStitcher/CLI, license state, Python and garment assets. The documented
+default CLI location is C:\Program Files\Browzwear\VStitcher-CLI\<version>\.
+Use its real --version and a small real BwApi smoke test before assuming access.
+If absent, use the official licensed installer. StylezoneConnect authentication
+is required. If account entitlement or authentication is unavailable, report the
+exact missing dependency and user action; do not bypass licensing or fake results.
+
+Create a dedicated .venv using an installed Python 3.11+ (prefer 3.12):
+  py -3.12 -m venv .venv
+  .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+  .\.venv\Scripts\python.exe scripts/verify_dataset.py
+  .\.venv\Scripts\python.exe -m pytest
+If the launcher/version differs, adapt it after inspection. Do not unnecessarily
+replace the computer's existing Python or VStitcher installation.
+
+You can validate clothing on existing fitted examples without downloading MHR
+again. After creating the REAL local garment catalog and native runtime config:
+  .\.venv\Scripts\python.exe -m pipeline clothes --subject-dir examples/fitted/ansur2_male_10027 --config configs/clothing.local.json --mode prepare
+  .\.venv\Scripts\python.exe -m pipeline clothes --subject-dir examples/fitted/ansur2_male_10027 --config configs/clothing.local.json --mode simulate
+  .\.venv\Scripts\python.exe -m pipeline clothes --subject-dir examples/fitted/ansur2_female_10037 --config configs/clothing.local.json --mode simulate
+
+For MHR generation, reuse a verified assets/mhr_model.pt or run:
+  .\.venv\Scripts\python.exe scripts/download_mhr_assets.py
+  .\.venv\Scripts\python.exe -m pipeline smoke-mhr
+  .\.venv\Scripts\python.exe -m pipeline verify --directory examples/fitted
+
+Then prove the combined invocation on BOTH real subjects:
+  .\.venv\Scripts\python.exe -m pipeline run --subject-id ansur2_male_10027 --subject-id ansur2_female_10037 --clothing-config configs/clothing.local.json --clothing-mode simulate
+Run it again to verify resume. --limit 2 alone is not a guarantee of one male and
+one female because selection follows source order. The --next-stage callback and
+--clothing-config are mutually exclusive; preserve that documented contract.
+
+Final batch entry point after successful pilots and suitable catalog coverage:
+  .\.venv\Scripts\python.exe -m pipeline run --clothing-config configs/clothing.local.json --clothing-mode simulate
+Provide a convenient single PowerShell launcher if useful, with preflight checks
+and correct exit-code propagation. Do not require per-person manual commands.
+Do not launch the full 6,068-record batch during debugging; report pilot results
+and the ready batch command first.
+
+8. ACCEPTANCE AND REPORTING
+
+Before marking Step 2 complete:
+  - Verify actual CLI/API execution on the installed runtime, not just GUI import.
+  - Verify MHR avatar units, height, orientation, ground, pose and anatomical
+    garment-placement anchors. Prepare a compatible reusable reference if needed.
+  - Run all three REAL fit variants on the male AND female example: six native
+    jobs total, using actual garments and adequate simulation with fabric/gravity.
+  - Inspect the results for penetration, placement, convergence and intended fit;
+    clearly separate automatic checks from human/visual physical-fit validation.
+  - Verify that exported scenes contain the requested MHR body and correct garment,
+    garment-only exports exclude the body, and all files have valid finite meshes.
+    Check exported dimensions/units explicitly, especially GLB unit conversion;
+    do not assume the current export scale setting preserves cm numerically.
+  - Save source IDs/hashes, garment IDs/hashes, native sizes, fit targets, seed,
+    runtime version, results, failures and output locations in durable metadata.
+  - Repeat the combined run to prove it skips completed outputs. Verify that a
+    failed/missing clothing output retries without regenerating a valid MHR body.
+    No hanging dialogs, silent successes, or duplicate successful jobs on resume.
+  - Preserve Step 1 tests/behavior; add meaningful tests for actual fixes. Report
+    native pilots separately from unit tests using synthetic API doubles.
+  - Update README, Step 2 docs and a new validation report with exact scope and
+    commit the changes in understandable steps. Keep the working tree reviewable.
+
+A partial success must be described precisely: GUI import, API execution, native
+simulation/export, intended fit and physical-fit validation are different facts.
+If something external is missing after discovery, finish independent work and
+ask for that specific dependency. Do not declare the whole pipeline done.
+
+9. OFFICIAL REFERENCES
+
+CLI setup/authentication:
+https://help.browzwear.com/en/articles/13265438-vstitcher-cli-local-installation-usage-guide
+Open Platform licensing:
+https://help.browzwear.com/en/articles/13066095-license-and-authentication
+Avatar requirements:
+https://help.browzwear.com/en/articles/13065635-imported-avatar-requirements
+Avatar API:
+https://help.browzwear.com/en/articles/13066134-avatar
+Garment API:
+https://help.browzwear.com/en/articles/13066118-garment
+Size API:
+https://help.browzwear.com/en/articles/13066127-size
+Synchronous simulation schema:
+https://help.browzwear.com/en/articles/14863747-simulation_v3_27-json
+Render API:
+https://help.browzwear.com/en/articles/13066137-render
+3D export schema:
+https://help.browzwear.com/en/articles/14863751-export_3d_object_v3_24-json
+Official men's sample archive (inspect availability and native sizes):
+https://share.browzwear.com/Help_Center/Downloadable_Files/man-Basic-t-shirt.bw_.zip
+
+Start by inspecting the checkout and this EC2 host, then implement and validate
+the missing native integration. Finish with what works, real pilot evidence,
+remaining limitations, the one-command run instructions and pushed commit hashes.

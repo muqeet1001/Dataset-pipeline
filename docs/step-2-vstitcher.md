@@ -5,6 +5,10 @@ The initial preparation checkpoint is followed by a successful desktop import pi
 on 2026-10-18. The EC2 VStitcher desktop was already signed in; no password was
 entered or stored by this pipeline.
 
+For continuation inside Codex CLI on EC2, use the complete
+[EC2 handoff prompt](ec2-codex-handoff.txt), which records the implementation,
+verified limits, native setup, commands and acceptance criteria.
+
 ## Required behavior
 
 For every accepted MHR mesh, use the subject's recorded sex to choose a garment
