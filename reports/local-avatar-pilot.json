@@ -1,0 +1,239 @@
+{
+  "audited_utc": "2026-10-18T18:46:10.481900+00:00",
+  "body_height_cm": 177.6,
+  "device": "cpu",
+  "fits": {
+    "loose": {
+      "accepted_numerically": true,
+      "additional_reverse_body_crossing_edges": {
+        "pants": 0,
+        "shirt": 0
+      },
+      "artifact_checksums_verified": true,
+      "body_faces_unchanged": true,
+      "body_roundtrip_max_error_m": 5.7270459041802724e-08,
+      "collar_support_vertices": 48,
+      "configuration": {
+        "device": "cpu",
+        "face_budget": 1200,
+        "iterations": 8,
+        "solver": "vbd",
+        "steps": 150,
+        "substeps": 4
+      },
+      "current_physics_source_signature_matches": true,
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.06720001943969578,
+            "edge_strain_p95_abs": 0.029137907982787998,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1172,
+            "vertices": 667
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.1726481082179936,
+            "edge_strain_p95_abs": 0.028444621207435006,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1145,
+            "vertices": 700
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "rest_surface_area_m2": {
+        "pants": 1.1960535711001261,
+        "shirt": 0.8952053772579187
+      },
+      "saved_status": "numerical_pass_unvalidated_fabric",
+      "scene_glb_sha256": "7a16c4f987bb74728352e8f25b9dd6cf7933d6a5046271bd65414c3ef4cdac0d",
+      "simulation_steps": 108,
+      "total_seconds": 188.90852879999875,
+      "waist_support_vertices": 89
+    },
+    "medium": {
+      "accepted_numerically": true,
+      "additional_reverse_body_crossing_edges": {
+        "pants": 0,
+        "shirt": 0
+      },
+      "artifact_checksums_verified": true,
+      "body_faces_unchanged": true,
+      "body_roundtrip_max_error_m": 5.7270459041802724e-08,
+      "collar_support_vertices": 48,
+      "configuration": {
+        "device": "cpu",
+        "face_budget": 1200,
+        "iterations": 8,
+        "solver": "vbd",
+        "steps": 150,
+        "substeps": 4
+      },
+      "current_physics_source_signature_matches": true,
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.05020589878522497,
+            "edge_strain_p95_abs": 0.02178746768858037,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1148,
+            "vertices": 644
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.09868967344353674,
+            "edge_strain_p95_abs": 0.037597725775185435,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1023,
+            "vertices": 599
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "rest_surface_area_m2": {
+        "pants": 0.9949057314278523,
+        "shirt": 0.8252642879506823
+      },
+      "saved_status": "numerical_pass_unvalidated_fabric",
+      "scene_glb_sha256": "a2d8a3f40bef1a06ae1f3918b78ed4a3e10f783efb0e3094f9c219da8ff97a59",
+      "simulation_steps": 109,
+      "total_seconds": 144.99701139999524,
+      "waist_support_vertices": 88
+    },
+    "tight": {
+      "accepted_numerically": true,
+      "additional_reverse_body_crossing_edges": {
+        "pants": 0,
+        "shirt": 0
+      },
+      "artifact_checksums_verified": true,
+      "body_faces_unchanged": true,
+      "body_roundtrip_max_error_m": 5.7270459041802724e-08,
+      "collar_support_vertices": 53,
+      "configuration": {
+        "device": "cpu",
+        "face_budget": 1200,
+        "iterations": 8,
+        "solver": "vbd",
+        "steps": 150,
+        "substeps": 4
+      },
+      "current_physics_source_signature_matches": true,
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.05463286017380686,
+            "edge_strain_p95_abs": 0.026008833085676412,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1160,
+            "vertices": 647
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.09241479367924255,
+            "edge_strain_p95_abs": 0.02963132650043439,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1017,
+            "vertices": 605
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "rest_surface_area_m2": {
+        "pants": 0.8480719877336063,
+        "shirt": 0.7549872114335057
+      },
+      "saved_status": "numerical_pass_unvalidated_fabric",
+      "scene_glb_sha256": "d583577fe912dd9356f11198cdfeae876d51e871f5ced0314b70f51e9236bfef",
+      "simulation_steps": 90,
+      "total_seconds": 134.8001826999971,
+      "waist_support_vertices": 86
+    }
+  },
+  "implementation_commit": "8da6b73ee16ed059d99168543f12b022f4466a4b",
+  "input_body_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+  "limitations": [
+    "Fabric preset is not calibrated",
+    "Static collar and waistband supports",
+    "One male outfit template; no female/full-dataset/GPU benchmark",
+    "Body-derived outer surface draft, not production sewing patterns"
+  ],
+  "newton_commit": "f49482ce07e20764110fd147a67c7334eeae638d",
+  "scope": "Local, static, supplied male MHR avatar; 3 fits, shirt and pants in each",
+  "solver": "Newton VBD plus sampled body contact",
+  "subject_id": "ansur2_male_10027",
+  "sum_fit_seconds": 468.7057228999911,
+  "test_results": {
+    "existing_pipeline_regressions_passed": 27,
+    "local_cloth_regressions_passed": 7,
+    "note": "Style3D component tests do not validate our garment adapter",
+    "upstream_style3d_component_tests_passed": 6
+  },
+  "three_fits_numerical_pass": true,
+  "timing_scope": "Per-fit drafting, simulation, validation and export on CPU; excludes dependency setup, MHR generation and earlier failed attempts",
+  "training_ready": false,
+  "versions": {
+    "newton": "1.8.0.dev0",
+    "numpy": "2.5.4",
+    "trimesh": "4.12.2",
+    "warp-lang": "1.18.0"
+  }
+}

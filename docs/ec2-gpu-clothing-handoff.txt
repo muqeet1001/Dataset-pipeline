@@ -1,5 +1,13 @@
 ACTIVE EC2 HANDOFF: GPU CLOTH SIMULATION + THREE.JS VIEWING
 
+LOCAL IMPLEMENTATION UPDATE (19 October 2026): a working static male prototype
+now exists. Read docs/local-avatar-clothing.md, reports/local-avatar-pilot.json
+and pipeline/avatar_clothing.py before the original task below. It uses Newton
+VBD plus sampled body contact, a supported collar/waistband and Three.js viewing.
+Three male fits passed numerical checks locally on CPU. GPU execution, female
+garments, fabric calibration and the formal solver/coverage benchmark remain
+unvalidated. Continue from this code; do not rebuild the prototype from scratch.
+
 Continue Dataset-pipeline on my existing EC2 machine. I have confirmed that the
 dataset is for a commercial product or future commercial model training. Python
 GPU simulation on EC2 is allowed; use Three.js to view the exported results.

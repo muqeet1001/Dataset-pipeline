@@ -6,8 +6,15 @@
   "newton": "1.8.0.dev0",
   "newton_commit": "f49482ce07e20764110fd147a67c7334eeae638d",
   "warp": "1.18.0",
-  "verified_devices": ["cpu"],
+  "verified_devices": [
+    "cpu"
+  ],
   "style3d_import_verified": true,
-  "simulation_status": "not yet run",
-  "note": "CPU prototype timings must not be presented as EC2 GPU benchmarks"
+  "simulation_status": "All three supplied-male fit variants passed numerical checks on CPU",
+  "note": "CPU prototype timings must not be presented as EC2 GPU benchmarks",
+  "last_checked": "2026-10-19",
+  "local_regression_tests_passed": 7,
+  "existing_pipeline_tests_passed": 27,
+  "style3d_upstream_component_tests_passed": 6,
+  "gpu_simulation_verified": false
 }

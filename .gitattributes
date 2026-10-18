@@ -1,4 +1,11 @@
 data/raw/ansur2/*.csv -text
 *.obj -text
+# Preserve generated OBJ bytes (including their exporter-produced final blank line).
+examples/clothing-pilot/**/*.obj -text whitespace=-blank-at-eof
 *.md text eol=lf
 *.json text eol=lf
+pipeline/avatar_clothing.py text eol=lf
+pipeline/garment_draft.py text eol=lf
+pipeline/offset_surface.py text eol=lf
+pipeline/body_contact.py text eol=lf
+pipeline/cloth_quality.py text eol=lf

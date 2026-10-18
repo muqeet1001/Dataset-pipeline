@@ -3,7 +3,9 @@ import argparse
 import hashlib
 from pathlib import Path
 import subprocess
+import shutil
 import sys
+import time
 import urllib.error
 import urllib.request
 import venv
@@ -32,6 +34,10 @@ def main():
     viewer=ROOT/'web/clothing-viewer'
     if not (viewer/'node_modules/three/package.json').exists():
         subprocess.check_call(['npm.cmd' if sys.platform=='win32' else 'npm','ci','--ignore-scripts','--no-audit','--no-fund'],cwd=viewer)
+    saved=ROOT/'runs/local-avatar/MHR-male-10027'
+    example=ROOT/'examples/clothing-pilot/MHR-male-10027'
+    if not saved.exists() and (example/'manifest.json').exists():
+        shutil.copytree(example,saved)
     url=f'http://127.0.0.1:{args.port}/web/clothing-viewer/'
     try:
         with urllib.request.urlopen(url,timeout=2) as response:
@@ -45,6 +51,15 @@ def main():
             creationflags=subprocess.CREATE_NO_WINDOW if sys.platform=='win32' else 0,
             start_new_session=sys.platform!='win32')
         (ROOT/'work/viewer.pid').write_text(str(process.pid))
+        for _ in range(40):
+            try:
+                with urllib.request.urlopen(url,timeout=.5) as response:
+                    if response.status==200:
+                        break
+            except urllib.error.URLError:
+                time.sleep(.1)
+        else:
+            raise RuntimeError('The local viewer did not start; inspect work/viewer.log')
     print(f'Open clothing viewer: {url}')
     if not args.no_browser:
         webbrowser.open(url)

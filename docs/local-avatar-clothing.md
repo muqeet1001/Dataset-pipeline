@@ -23,6 +23,12 @@ three fits, compares rest and simulated surfaces, offers wireframe/body-opacity
 inspection, and links actual GLB exports and reports. Opacity only changes the
 viewer; it does not change or omit the exported body.
 
+The [three-fit comparison](http://127.0.0.1:9086/web/clothing-viewer/compare.html)
+shows all three real exports together. Verified pilot files are committed under
+`examples/clothing-pilot/MHR-male-10027`; a fresh checkout seeds the viewer's run
+folder from those examples if no run folder exists. Normal runs still verify
+signatures/checksums before reusing them.
+
 For explicit simulation control:
 
 ```powershell
@@ -80,6 +86,11 @@ roundtrip. A numerical pass is labelled `numerical_pass_unvalidated_fabric`.
 `needs_review` remains a failed acceptance condition and is never training-ready.
 No body hiding, body rescaling or export-only correction is used to manufacture
 a pass. Max source-body roundtrip error is checked against 0.0001 mm.
+
+The final local pilot passed all three fits, including independent reverse
+body-edge crossing checks. `reports/local-avatar-pilot.json` contains the actual
+metrics and timing scope; `reports/local-avatar-resume.json` records an actual
+second launcher run that reused all three scenes without changing them.
 
 Seven local tests cover body identity/units, unknown metadata rejection, graded
 rest sizes and correct garment openings, a triangle crossing missed by vertex-only

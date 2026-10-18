@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-19",
+  "command": "python run_clothing.py --no-browser",
+  "exit_code": 0,
+  "elapsed_seconds": 10.78184450000117,
+  "all_three_fits_reused": true,
+  "scene_files_unchanged": true,
+  "stdout": "tight: verified artifacts reused\nmedium: verified artifacts reused\nloose: verified artifacts reused\nViewer data: B:\\Dataset-pipeline\\runs\\local-avatar\\MHR-male-10027\\manifest.json\nOpen clothing viewer: http://127.0.0.1:9086/web/clothing-viewer/\n",
+  "scenes": {
+    "runs/local-avatar/MHR-male-10027/loose/scene.glb": {
+      "sha256": "7a16c4f987bb74728352e8f25b9dd6cf7933d6a5046271bd65414c3ef4cdac0d",
+      "mtime_ns": 1792349078809509700
+    },
+    "runs/local-avatar/MHR-male-10027/medium/scene.glb": {
+      "sha256": "a2d8a3f40bef1a06ae1f3918b78ed4a3e10f783efb0e3094f9c219da8ff97a59",
+      "mtime_ns": 1792348896871090200
+    },
+    "runs/local-avatar/MHR-male-10027/tight/scene.glb": {
+      "sha256": "d583577fe912dd9356f11198cdfeae876d51e871f5ced0314b70f51e9236bfef",
+      "mtime_ns": 1792348750003644200
+    }
+  }
+}

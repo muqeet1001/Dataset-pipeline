@@ -1,0 +1,706 @@
+{
+  "body_height_cm": 177.6,
+  "body_scope": "Height and three circumference proxies; other dimensions are not exact",
+  "body_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+  "device": "cpu",
+  "fits": {
+    "loose": {
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.06720001943969578,
+            "edge_strain_p95_abs": 0.029137907982787998,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1172,
+            "vertices": 667
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.1726481082179936,
+            "edge_strain_p95_abs": 0.028444621207435006,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1145,
+            "vertices": 700
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "settling_history": [
+          {
+            "frame": 79,
+            "max_movement_m": 0.002151951426640153,
+            "p95_movement_m": 0.0004785613273270428,
+            "p95_speed_m_s": 0.028274739161133766
+          },
+          {
+            "frame": 80,
+            "max_movement_m": 0.0016054807929322124,
+            "p95_movement_m": 0.00042041330016218126,
+            "p95_speed_m_s": 0.02282574214041233
+          },
+          {
+            "frame": 81,
+            "max_movement_m": 0.0015963742043823004,
+            "p95_movement_m": 0.0003485711640678346,
+            "p95_speed_m_s": 0.02083253301680088
+          },
+          {
+            "frame": 82,
+            "max_movement_m": 0.0016134018078446388,
+            "p95_movement_m": 0.0003323169075883925,
+            "p95_speed_m_s": 0.019461477175354958
+          },
+          {
+            "frame": 83,
+            "max_movement_m": 0.0014997590333223343,
+            "p95_movement_m": 0.0003158021718263626,
+            "p95_speed_m_s": 0.019784722477197647
+          },
+          {
+            "frame": 84,
+            "max_movement_m": 0.001303075347095728,
+            "p95_movement_m": 0.0003311349719297141,
+            "p95_speed_m_s": 0.02049075812101364
+          },
+          {
+            "frame": 85,
+            "max_movement_m": 0.001406591385602951,
+            "p95_movement_m": 0.0003129089018329978,
+            "p95_speed_m_s": 0.01785227470099926
+          },
+          {
+            "frame": 86,
+            "max_movement_m": 0.0012301835231482983,
+            "p95_movement_m": 0.0002610588853713125,
+            "p95_speed_m_s": 0.01559608243405819
+          },
+          {
+            "frame": 87,
+            "max_movement_m": 0.0008982808794826269,
+            "p95_movement_m": 0.00025836576241999865,
+            "p95_speed_m_s": 0.014994232915341854
+          },
+          {
+            "frame": 88,
+            "max_movement_m": 0.0007111529703252017,
+            "p95_movement_m": 0.00024408751050941646,
+            "p95_speed_m_s": 0.016122467815876007
+          },
+          {
+            "frame": 89,
+            "max_movement_m": 0.0007927131955511868,
+            "p95_movement_m": 0.0002421979297650978,
+            "p95_speed_m_s": 0.013853267766535282
+          },
+          {
+            "frame": 90,
+            "max_movement_m": 0.0007180567481555045,
+            "p95_movement_m": 0.0002238647430203855,
+            "p95_speed_m_s": 0.013089005835354328
+          },
+          {
+            "frame": 91,
+            "max_movement_m": 0.0005475538200698793,
+            "p95_movement_m": 0.00020555839000735432,
+            "p95_speed_m_s": 0.012333814986050129
+          },
+          {
+            "frame": 92,
+            "max_movement_m": 0.0004825054493267089,
+            "p95_movement_m": 0.00020190433133393526,
+            "p95_speed_m_s": 0.01191183365881443
+          },
+          {
+            "frame": 93,
+            "max_movement_m": 0.00043939449824392796,
+            "p95_movement_m": 0.0001787606015568599,
+            "p95_speed_m_s": 0.010637171566486359
+          },
+          {
+            "frame": 94,
+            "max_movement_m": 0.00041943948599509895,
+            "p95_movement_m": 0.00016355160914827138,
+            "p95_speed_m_s": 0.009976668283343315
+          },
+          {
+            "frame": 95,
+            "max_movement_m": 0.0003974532592110336,
+            "p95_movement_m": 0.00016390816017519683,
+            "p95_speed_m_s": 0.009930011816322803
+          },
+          {
+            "frame": 96,
+            "max_movement_m": 0.0003621253417804837,
+            "p95_movement_m": 0.00015915597032289952,
+            "p95_speed_m_s": 0.00938100554049015
+          },
+          {
+            "frame": 97,
+            "max_movement_m": 0.0003137291350867599,
+            "p95_movement_m": 0.0001523891551187262,
+            "p95_speed_m_s": 0.009065885096788406
+          },
+          {
+            "frame": 98,
+            "max_movement_m": 0.00026962804258801043,
+            "p95_movement_m": 0.0001512147136963904,
+            "p95_speed_m_s": 0.008836116641759872
+          },
+          {
+            "frame": 99,
+            "max_movement_m": 0.0002900904801208526,
+            "p95_movement_m": 0.00014209070650395006,
+            "p95_speed_m_s": 0.008299531415104866
+          },
+          {
+            "frame": 100,
+            "max_movement_m": 0.00031838528229855,
+            "p95_movement_m": 0.0001317342248512432,
+            "p95_speed_m_s": 0.007658090908080339
+          },
+          {
+            "frame": 101,
+            "max_movement_m": 0.0003273151523899287,
+            "p95_movement_m": 0.00011777206236729398,
+            "p95_speed_m_s": 0.006889683194458485
+          },
+          {
+            "frame": 102,
+            "max_movement_m": 0.0003082333132624626,
+            "p95_movement_m": 0.00010639183892635629,
+            "p95_speed_m_s": 0.006298420485109091
+          },
+          {
+            "frame": 103,
+            "max_movement_m": 0.0002691575500648469,
+            "p95_movement_m": 9.747256990522146e-05,
+            "p95_speed_m_s": 0.00575844943523407
+          },
+          {
+            "frame": 104,
+            "max_movement_m": 0.00023981797858141363,
+            "p95_movement_m": 8.605707989772782e-05,
+            "p95_speed_m_s": 0.005357918329536915
+          },
+          {
+            "frame": 105,
+            "max_movement_m": 0.00023446415434591472,
+            "p95_movement_m": 7.805963105056435e-05,
+            "p95_speed_m_s": 0.0048414175398647785
+          },
+          {
+            "frame": 106,
+            "max_movement_m": 0.0002367435663472861,
+            "p95_movement_m": 7.052860746625811e-05,
+            "p95_speed_m_s": 0.004583422094583511
+          },
+          {
+            "frame": 107,
+            "max_movement_m": 0.00022159615764394403,
+            "p95_movement_m": 6.966319779166952e-05,
+            "p95_speed_m_s": 0.004326204303652048
+          },
+          {
+            "frame": 108,
+            "max_movement_m": 0.00019635772332549095,
+            "p95_movement_m": 6.439988646889105e-05,
+            "p95_speed_m_s": 0.003955717198550701
+          }
+        ],
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "report": "loose/fit-report.json",
+      "rest": "loose/rest.glb",
+      "scene": "loose/scene.glb",
+      "status": "numerical_pass_unvalidated_fabric",
+      "total_seconds": 188.90852879999875
+    },
+    "medium": {
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.05020589878522497,
+            "edge_strain_p95_abs": 0.02178746768858037,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1148,
+            "vertices": 644
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.09868967344353674,
+            "edge_strain_p95_abs": 0.037597725775185435,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1023,
+            "vertices": 599
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "settling_history": [
+          {
+            "frame": 80,
+            "max_movement_m": 0.0021658584009855986,
+            "p95_movement_m": 0.0003950235841330141,
+            "p95_speed_m_s": 0.02319110371172428
+          },
+          {
+            "frame": 81,
+            "max_movement_m": 0.0013294810196384788,
+            "p95_movement_m": 0.00035638801637105644,
+            "p95_speed_m_s": 0.02092614583671093
+          },
+          {
+            "frame": 82,
+            "max_movement_m": 0.0012087303912267089,
+            "p95_movement_m": 0.00034410739317536354,
+            "p95_speed_m_s": 0.01975523866713047
+          },
+          {
+            "frame": 83,
+            "max_movement_m": 0.0008053398923948407,
+            "p95_movement_m": 0.0003324814315419644,
+            "p95_speed_m_s": 0.019417447969317436
+          },
+          {
+            "frame": 84,
+            "max_movement_m": 0.0008015985949896276,
+            "p95_movement_m": 0.00032709463266655803,
+            "p95_speed_m_s": 0.01841609552502632
+          },
+          {
+            "frame": 85,
+            "max_movement_m": 0.0006353194476105273,
+            "p95_movement_m": 0.0002861024113371968,
+            "p95_speed_m_s": 0.016283640637993813
+          },
+          {
+            "frame": 86,
+            "max_movement_m": 0.0005257789161987603,
+            "p95_movement_m": 0.0002545944007579237,
+            "p95_speed_m_s": 0.0138475326821208
+          },
+          {
+            "frame": 87,
+            "max_movement_m": 0.0005110044148750603,
+            "p95_movement_m": 0.00020796022727154195,
+            "p95_speed_m_s": 0.011638130992650986
+          },
+          {
+            "frame": 88,
+            "max_movement_m": 0.0003872265515383333,
+            "p95_movement_m": 0.00018390400509815663,
+            "p95_speed_m_s": 0.010806351900100708
+          },
+          {
+            "frame": 89,
+            "max_movement_m": 0.00033287162659689784,
+            "p95_movement_m": 0.00017929125169757754,
+            "p95_speed_m_s": 0.010382536798715591
+          },
+          {
+            "frame": 90,
+            "max_movement_m": 0.0004730030195787549,
+            "p95_movement_m": 0.00017419547657482326,
+            "p95_speed_m_s": 0.010144759900867939
+          },
+          {
+            "frame": 91,
+            "max_movement_m": 0.0005629716906696558,
+            "p95_movement_m": 0.00017578541883267462,
+            "p95_speed_m_s": 0.010931330733001232
+          },
+          {
+            "frame": 92,
+            "max_movement_m": 0.0005284897633828223,
+            "p95_movement_m": 0.00019393851107452065,
+            "p95_speed_m_s": 0.012313690967857838
+          },
+          {
+            "frame": 93,
+            "max_movement_m": 0.0005319046322256327,
+            "p95_movement_m": 0.0001932161976583302,
+            "p95_speed_m_s": 0.0120314359664917
+          },
+          {
+            "frame": 94,
+            "max_movement_m": 0.0005336507456377149,
+            "p95_movement_m": 0.00016556655464228243,
+            "p95_speed_m_s": 0.010759619064629078
+          },
+          {
+            "frame": 95,
+            "max_movement_m": 0.0005322627257555723,
+            "p95_movement_m": 0.00015618428005836904,
+            "p95_speed_m_s": 0.009856932796537876
+          },
+          {
+            "frame": 96,
+            "max_movement_m": 0.0005300704506225884,
+            "p95_movement_m": 0.00015532379620708525,
+            "p95_speed_m_s": 0.009571989066898823
+          },
+          {
+            "frame": 97,
+            "max_movement_m": 0.0005370979197323322,
+            "p95_movement_m": 0.0001663520379224792,
+            "p95_speed_m_s": 0.010323600843548775
+          },
+          {
+            "frame": 98,
+            "max_movement_m": 0.0006489227525889874,
+            "p95_movement_m": 0.00016291977954097092,
+            "p95_speed_m_s": 0.011111566796898842
+          },
+          {
+            "frame": 99,
+            "max_movement_m": 0.0006449832580983639,
+            "p95_movement_m": 0.00019560604414436966,
+            "p95_speed_m_s": 0.011524636298418045
+          },
+          {
+            "frame": 100,
+            "max_movement_m": 0.0005350979045033455,
+            "p95_movement_m": 0.00018690009892452508,
+            "p95_speed_m_s": 0.009607616811990738
+          },
+          {
+            "frame": 101,
+            "max_movement_m": 0.0005445650313049555,
+            "p95_movement_m": 0.00012588630488608032,
+            "p95_speed_m_s": 0.006979626137763262
+          },
+          {
+            "frame": 102,
+            "max_movement_m": 0.0005159700522199273,
+            "p95_movement_m": 9.559734462527558e-05,
+            "p95_speed_m_s": 0.005796847399324179
+          },
+          {
+            "frame": 103,
+            "max_movement_m": 0.0005022821133024991,
+            "p95_movement_m": 9.997864253818989e-05,
+            "p95_speed_m_s": 0.0059990850277245045
+          },
+          {
+            "frame": 104,
+            "max_movement_m": 0.0004695899551734328,
+            "p95_movement_m": 0.0001049838901963085,
+            "p95_speed_m_s": 0.006051689852029085
+          },
+          {
+            "frame": 105,
+            "max_movement_m": 0.0004984071711078286,
+            "p95_movement_m": 9.897525887936354e-05,
+            "p95_speed_m_s": 0.0058119031600654125
+          },
+          {
+            "frame": 106,
+            "max_movement_m": 0.0005082269199192524,
+            "p95_movement_m": 9.167531970888376e-05,
+            "p95_speed_m_s": 0.005240995436906815
+          },
+          {
+            "frame": 107,
+            "max_movement_m": 0.00033511407673358917,
+            "p95_movement_m": 9.278437937609851e-05,
+            "p95_speed_m_s": 0.005268936976790428
+          },
+          {
+            "frame": 108,
+            "max_movement_m": 0.0003289175219833851,
+            "p95_movement_m": 8.416383934672922e-05,
+            "p95_speed_m_s": 0.005014314781874418
+          },
+          {
+            "frame": 109,
+            "max_movement_m": 0.0003884132020175457,
+            "p95_movement_m": 0.0001071654332918115,
+            "p95_speed_m_s": 0.007923929020762444
+          }
+        ],
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "report": "medium/fit-report.json",
+      "rest": "medium/rest.glb",
+      "scene": "medium/scene.glb",
+      "status": "numerical_pass_unvalidated_fabric",
+      "total_seconds": 144.99701139999524
+    },
+    "tight": {
+      "quality": {
+        "finite": true,
+        "garments": {
+          "pants": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.05463286017380686,
+            "edge_strain_p95_abs": 0.026008833085676412,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1160,
+            "vertices": 647
+          },
+          "shirt": {
+            "body_crossing_edges": 0,
+            "body_inside_samples_over_tolerance": 0,
+            "edge_strain_max_abs": 0.09241479367924255,
+            "edge_strain_p95_abs": 0.02963132650043439,
+            "max_body_penetration_m": 0.0,
+            "self_crossing_edges": 0,
+            "triangles": 1017,
+            "vertices": 605
+          }
+        },
+        "geometry_pass": true,
+        "inter_garment_crossing_edges": 0,
+        "limitations": [
+          "Prototype body-derived garment draft",
+          "Fabric parameters are uncalibrated assumptions",
+          "No comparison against physical garments or MD/VStitcher yet"
+        ],
+        "numerical_pass": true,
+        "physical_fit_calibrated": false,
+        "settled": true,
+        "settling_history": [
+          {
+            "frame": 61,
+            "max_movement_m": 0.00021358563390094787,
+            "p95_movement_m": 4.92353065055795e-05,
+            "p95_speed_m_s": 0.0039873989298939705
+          },
+          {
+            "frame": 62,
+            "max_movement_m": 0.00011367563274689019,
+            "p95_movement_m": 5.137263724463992e-05,
+            "p95_speed_m_s": 0.0030011122580617666
+          },
+          {
+            "frame": 63,
+            "max_movement_m": 0.0001381801994284615,
+            "p95_movement_m": 4.714202441391535e-05,
+            "p95_speed_m_s": 0.0029566672164946795
+          },
+          {
+            "frame": 64,
+            "max_movement_m": 0.00013717210094910115,
+            "p95_movement_m": 4.267090480425395e-05,
+            "p95_speed_m_s": 0.0027370948810130358
+          },
+          {
+            "frame": 65,
+            "max_movement_m": 0.00016456618322990835,
+            "p95_movement_m": 3.792707502725534e-05,
+            "p95_speed_m_s": 0.00272794789634645
+          },
+          {
+            "frame": 66,
+            "max_movement_m": 0.0001641790004214272,
+            "p95_movement_m": 3.970966281485744e-05,
+            "p95_speed_m_s": 0.003232155693694949
+          },
+          {
+            "frame": 67,
+            "max_movement_m": 0.00028159355861134827,
+            "p95_movement_m": 3.798790930886753e-05,
+            "p95_speed_m_s": 0.002758010756224394
+          },
+          {
+            "frame": 68,
+            "max_movement_m": 0.00024155569553840905,
+            "p95_movement_m": 4.284118767827749e-05,
+            "p95_speed_m_s": 0.00435305293649435
+          },
+          {
+            "frame": 69,
+            "max_movement_m": 0.0003254312614444643,
+            "p95_movement_m": 7.312503294087946e-05,
+            "p95_speed_m_s": 0.006707003340125084
+          },
+          {
+            "frame": 70,
+            "max_movement_m": 0.00034377261181361973,
+            "p95_movement_m": 8.301906927954406e-05,
+            "p95_speed_m_s": 0.00711449421942234
+          },
+          {
+            "frame": 71,
+            "max_movement_m": 0.0004363606858532876,
+            "p95_movement_m": 9.414786472916603e-05,
+            "p95_speed_m_s": 0.0068887826055288315
+          },
+          {
+            "frame": 72,
+            "max_movement_m": 0.00047646209714002907,
+            "p95_movement_m": 9.981057519325987e-05,
+            "p95_speed_m_s": 0.006843835115432739
+          },
+          {
+            "frame": 73,
+            "max_movement_m": 0.00046530977124348283,
+            "p95_movement_m": 9.557987505104393e-05,
+            "p95_speed_m_s": 0.006849995348602533
+          },
+          {
+            "frame": 74,
+            "max_movement_m": 0.00042802011012099683,
+            "p95_movement_m": 9.123400377575308e-05,
+            "p95_speed_m_s": 0.006752270273864269
+          },
+          {
+            "frame": 75,
+            "max_movement_m": 0.00038468444836325943,
+            "p95_movement_m": 8.319209882756695e-05,
+            "p95_speed_m_s": 0.005864915903657675
+          },
+          {
+            "frame": 76,
+            "max_movement_m": 0.00027654835139401257,
+            "p95_movement_m": 6.31326693110168e-05,
+            "p95_speed_m_s": 0.0039988309144973755
+          },
+          {
+            "frame": 77,
+            "max_movement_m": 0.00023186570615507662,
+            "p95_movement_m": 4.824048301088624e-05,
+            "p95_speed_m_s": 0.003961916547268629
+          },
+          {
+            "frame": 78,
+            "max_movement_m": 0.0001912011211970821,
+            "p95_movement_m": 5.1567192713264376e-05,
+            "p95_speed_m_s": 0.003850035136565566
+          },
+          {
+            "frame": 79,
+            "max_movement_m": 0.00020039388618897647,
+            "p95_movement_m": 4.4698557758238167e-05,
+            "p95_speed_m_s": 0.00282725365832448
+          },
+          {
+            "frame": 80,
+            "max_movement_m": 0.00015366895240731537,
+            "p95_movement_m": 3.3855751098599285e-05,
+            "p95_speed_m_s": 0.0028474677819758654
+          },
+          {
+            "frame": 81,
+            "max_movement_m": 0.00011091709893662483,
+            "p95_movement_m": 3.134219878120348e-05,
+            "p95_speed_m_s": 0.0024222787469625473
+          },
+          {
+            "frame": 82,
+            "max_movement_m": 9.350839536637068e-05,
+            "p95_movement_m": 2.9042979804216884e-05,
+            "p95_speed_m_s": 0.0021797670051455498
+          },
+          {
+            "frame": 83,
+            "max_movement_m": 0.00011353348236298189,
+            "p95_movement_m": 2.7915093596675433e-05,
+            "p95_speed_m_s": 0.0020720402244478464
+          },
+          {
+            "frame": 84,
+            "max_movement_m": 0.00010372810356784612,
+            "p95_movement_m": 2.6809755581780337e-05,
+            "p95_speed_m_s": 0.001899756258353591
+          },
+          {
+            "frame": 85,
+            "max_movement_m": 9.783874702407047e-05,
+            "p95_movement_m": 2.089808003802318e-05,
+            "p95_speed_m_s": 0.0016246725572273135
+          },
+          {
+            "frame": 86,
+            "max_movement_m": 0.0001136675855377689,
+            "p95_movement_m": 1.5974192137946375e-05,
+            "p95_speed_m_s": 0.001381500856950879
+          },
+          {
+            "frame": 87,
+            "max_movement_m": 9.778606181498617e-05,
+            "p95_movement_m": 1.3697023860004265e-05,
+            "p95_speed_m_s": 0.0014915228821337223
+          },
+          {
+            "frame": 88,
+            "max_movement_m": 0.0001080066358554177,
+            "p95_movement_m": 1.068674373527756e-05,
+            "p95_speed_m_s": 0.0011953550856560469
+          },
+          {
+            "frame": 89,
+            "max_movement_m": 0.00013320085417944938,
+            "p95_movement_m": 9.410099664819427e-06,
+            "p95_speed_m_s": 0.0011059257667511702
+          },
+          {
+            "frame": 90,
+            "max_movement_m": 0.00010156539065064862,
+            "p95_movement_m": 9.381853487866465e-06,
+            "p95_speed_m_s": 0.0013711899518966675
+          }
+        ],
+        "tolerances": {
+          "body_penetration_m": 0.001,
+          "segment_endpoint_exclusion_m": 1e-05
+        }
+      },
+      "report": "tight/fit-report.json",
+      "rest": "tight/rest.glb",
+      "scene": "tight/scene.glb",
+      "status": "numerical_pass_unvalidated_fabric",
+      "total_seconds": 134.8001826999971
+    }
+  },
+  "newton_commit": "f49482ce07e20764110fd147a67c7334eeae638d",
+  "sex": "male",
+  "signature": "e0a94ceac734b612c5108aee276290a5baccca568caf50b489174dce5406c001",
+  "solver": "vbd",
+  "status": "prototype_complete",
+  "subject_id": "ansur2_male_10027",
+  "training_ready": false,
+  "units": "metres",
+  "versions": {
+    "newton": "1.8.0.dev0",
+    "numpy": "2.5.4",
+    "trimesh": "4.12.2",
+    "warp-lang": "1.18.0"
+  }
+}

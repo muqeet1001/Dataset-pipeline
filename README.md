@@ -13,13 +13,16 @@ See `docs/local-avatar-clothing.md` for the one-command launch, actual scope,
 CPU-only environment, support constraints and validation status. This is a local
 prototype; it does not complete the full dataset/female/GPU benchmark scope below.
 
+![Verified local tight, medium and loose outfits](reports/local-avatar-preview.png)
+
 The user confirmed future commercial use and approved Python/GPU simulation on
 EC2. The source review recommends modern Newton/Warp: compare SolverStyle3D and
 SolverVBD on the actual MHR bodies before selecting a solver. See
 `docs/cloth-technology-evaluation.md` for the comparison, published tests,
 dependency restrictions and acceptance cases. The active implementation prompt is
-`docs/ec2-gpu-clothing-handoff.txt`. This backend is **not yet implemented or
-benchmarked**; no MD/VStitcher-equivalent quality or speedup is claimed.
+`docs/ec2-gpu-clothing-handoff.txt`. The full dataset backend and formal solver
+comparison are **not yet validated**; no MD/VStitcher-equivalent quality or
+speedup is claimed. The local male pilot is recorded separately above.
 
 `python scripts/prepare_cloth_benchmark.py` reproduces a plan of 14 subjects and
 60 **not-run** outfit cases per solver in `reports/cloth-benchmark-plan.json`.
