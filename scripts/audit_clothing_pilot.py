@@ -15,7 +15,7 @@ sys.path.insert(0,str(ROOT))
 from pipeline.avatar_clothing import load_body, write_json
 from pipeline.cloth_quality import edge_crossings
 from pipeline.cloth_receipts import reusable
-from pipeline.garment_draft import PROFILES
+from pipeline.sewing_patterns import PROFILES
 
 
 def main():
@@ -32,9 +32,9 @@ def main():
         'newton_commit':manifest['newton_commit'],'versions':manifest['versions'],
         'implementation_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'fits':{},'training_ready':False,
-        'limitations':['Fabric preset is not calibrated','Static collar and waistband supports',
+        'limitations':['Fabric preset is not calibrated','Waistband edge support; shirt has no fixed support',
                        'One male outfit template; no female/full-dataset/GPU benchmark',
-                       'Body-derived outer surface draft, not production sewing patterns'],
+                       'Original prototype tee and trouser patterns require tailoring validation'],
         'test_results':{'local_cloth_regressions_passed':7,'existing_pipeline_regressions_passed':27,
                         'upstream_style3d_component_tests_passed':6,
                         'note':'Style3D component tests do not validate our garment adapter'},
@@ -55,7 +55,7 @@ def main():
             rest=np.load(folder/(name+'-rest.npz'))
             areas[name]=float(trimesh.Trimesh(rest['vertices'],rest['faces'],process=False).area)
         code={name:hashlib.sha256((ROOT/'pipeline'/name).read_bytes()).hexdigest() for name in
-              ('avatar_clothing.py','garment_draft.py','cloth_quality.py','body_contact.py','offset_surface.py')}
+              ('avatar_clothing.py','sewing_patterns.py','cloth_quality.py','body_contact.py')}
         expected=hashlib.sha256(json.dumps({'body':source_hash,'config':saved['configuration'],
             'code':code,'profiles':PROFILES},sort_keys=True).encode()).hexdigest()
         current_source_matches=saved['signature']==expected

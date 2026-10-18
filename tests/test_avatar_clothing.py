@@ -12,7 +12,7 @@ pytest.importorskip('skimage', reason='Install requirements-cloth.txt for the op
 from pipeline.avatar_clothing import load_body, ROOT
 from pipeline.body_contact import BodyContact
 from pipeline.cloth_quality import edge_crossings
-from pipeline.garment_draft import draft
+from pipeline.sewing_patterns import draft
 from pipeline.cloth_receipts import job_lock, reusable
 
 
@@ -41,7 +41,7 @@ def test_drafts_grade_cloth_and_preserve_body():
         for g in garments:
             assert np.isfinite(g['panel_vertices']).all()
             assert np.min(g['rest_edge_lengths']) > 0
-            # Guard the real clipping-sliver regression that opened the shirt.
+            # Sewing must leave just neck/cuffs/hem, or waist/two leg hems.
             from scipy.sparse import coo_matrix
             from scipy.sparse.csgraph import connected_components
             mesh=g['mesh']
@@ -52,9 +52,18 @@ def test_drafts_grade_cloth_and_preserve_body():
             _,labels=connected_components(graph,directed=False)
             openings=len(np.unique(labels[boundary.ravel()]))
             assert openings==(4 if g['name']=='shirt' else 3)
-            areas[g['name']].append(g['mesh'].area)
+            assert np.bincount(mesh.edges_unique_inverse).max()==2
+            assert mesh.is_winding_consistent
+            assert mesh.area_faces.min()>1e-10
+            uv=g['panel_vertices'][g['panel_indices']]
+            a,b=uv[:,1]-uv[:,0],uv[:,2]-uv[:,0]
+            flat_area=np.abs(a[:,0]*b[:,1]-a[:,1]*b[:,0]).sum()/2
+            assert flat_area==pytest.approx(g['draft']['flat_area_m2'])
+            # A pattern metric must not inherit body curvature or placement stretch.
+            assert np.max(np.abs(mesh.edges_unique_length/g['rest_edge_lengths']-1))>.05
+            areas[g['name']].append(flat_area)
             if g['name']=='shirt':
-                assert 6 <= g['pinned'].sum() < len(g['mesh'].vertices)*.12
+                assert g['pinned'].sum()==0
             else:
                 assert 3 <= g['pinned'].sum() < len(g['mesh'].vertices)*.2
     np.testing.assert_array_equal(before,body.vertices)

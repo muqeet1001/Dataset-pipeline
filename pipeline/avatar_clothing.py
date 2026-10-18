@@ -9,7 +9,7 @@ import time
 import numpy as np
 import trimesh
 
-from .garment_draft import draft, PROFILES
+from .sewing_patterns import draft, PROFILES
 from .cloth_quality import validate
 from .cloth_receipts import job_lock, reusable
 
@@ -75,6 +75,7 @@ def simulate(body, garments, args, progress):
         for garment in garments:
             mesh = garment['mesh']
             start = builder.particle_count
+            tri_start, edge_start = builder.tri_count, builder.edge_count
             if args.solver == 'style3d':
                 newton.solvers.style3d.add_cloth_mesh(
                     builder, pos=wp.vec3(0, 0, 0), rot=wp.quat_identity(), vel=wp.vec3(0, 0, 0),
@@ -88,6 +89,24 @@ def simulate(body, garments, args, progress):
                     vel=wp.vec3(0,0,0), vertices=mesh.vertices.tolist(), indices=mesh.faces.flatten().tolist(),
                     density=.25, tri_ke=3000, tri_ka=1000, tri_kd=.002, edge_ke=5e-5, edge_kd=.001,
                     particle_radius=.002)
+                if builder.tri_count-tri_start!=len(mesh.faces):
+                    raise ValueError('Initial garment arrangement contains collapsed triangles')
+                # The cut panels, rather than the curved arrangement, define
+                # the unstretched material. Cotton cloth bends towards flat.
+                uv=garment['panel_vertices'][garment['panel_indices']]
+                a,b=uv[:,1]-uv[:,0],uv[:,2]-uv[:,0]
+                length=np.linalg.norm(a,axis=1)
+                x=np.einsum('ij,ij->i',a,b)/length
+                h=np.abs(a[:,0]*b[:,1]-a[:,1]*b[:,0])/length
+                matrix=np.zeros((len(uv),2,2))
+                matrix[:,0,0]=1/length;matrix[:,0,1]=-x/(length*h);matrix[:,1,1]=1/h
+                builder.tri_poses[tri_start:]=matrix.tolist()
+                area=length*h/2
+                builder.tri_areas[tri_start:]=area.tolist()
+                masses=np.zeros(len(mesh.vertices))
+                np.add.at(masses,mesh.faces.ravel(),np.repeat(area*.25/3,3))
+                builder.particle_mass[start:]=masses.tolist()
+                builder.edge_rest_angle[edge_start:]=[0.]*(builder.edge_count-edge_start)
             stop = builder.particle_count
             ranges.append((start, stop))
             for index in np.flatnonzero(garment['pinned']):
@@ -117,6 +136,8 @@ def simulate(body, garments, args, progress):
         setup_seconds = time.perf_counter() - started
         last = state.particle_q.numpy().copy()
         initial = last.copy()
+        samples=[initial.copy()]
+        sample_frames=[0]
         history = []
         settled = False
         solve_started = time.perf_counter()
@@ -137,16 +158,21 @@ def simulate(body, garments, args, progress):
                             'max_movement_m': float(movement.max()),
                             'p95_speed_m_s': float(np.percentile(np.linalg.norm(velocities,axis=1),95))})
             last = points
+            if (frame+1)%2==0:
+                samples.append(points.copy());sample_frames.append(frame+1)
             if (frame+1) % 15 == 0:
                 print(f"  frame {frame+1}/{args.steps}: p95 movement {history[-1]['p95_movement_m']*1000:.2f} mm", flush=True)
-                progress(frame+1, history[-1])
+                progress(frame+1, history[-1], points, ranges)
             if frame >= 89 and all(h['p95_movement_m'] < .0005 and h['max_movement_m'] < .003
                                    and h['p95_speed_m_s'] < .03 for h in history[-30:]):
                 settled = True
                 break
         for garment, (start, stop) in zip(garments, ranges):
             garment['mesh'].vertices = points[start:stop]
+        if sample_frames[-1]!=frame+1:
+            samples.append(points.copy());sample_frames.append(frame+1)
         return {'setup_seconds': setup_seconds, 'simulation_seconds': time.perf_counter()-solve_started,
+                '_trajectory':np.asarray(samples,dtype='<f4'),'sample_frames':sample_frames,
                 'steps_completed': frame+1, 'settled': settled, 'history': history,
                 'max_actual_simulation_displacement_m': float(np.linalg.norm(points-initial,axis=1).max()),
                 'pinned_vertices': sum(int(g['pinned'].sum()) for g in garments),
@@ -164,7 +190,7 @@ def _run(args):
     body, metadata, body_hash = load_body(folder)
     config = {key: getattr(args,key) for key in ('device','solver','steps','substeps','iterations','face_budget')}
     code = {name:digest(Path(__file__).with_name(name)) for name in
-            ('avatar_clothing.py','garment_draft.py','cloth_quality.py','body_contact.py','offset_surface.py')}
+            ('avatar_clothing.py','sewing_patterns.py','cloth_quality.py','body_contact.py')}
     key = hashlib.sha256(json.dumps({'body':body_hash,'config':config,'code':code,'profiles':PROFILES},sort_keys=True).encode()).hexdigest()
     manifest = {'subject_id':metadata['subject_id'],'sex':metadata['sex'],'body_height_cm':metadata['height_cm'],
                 'body_sha256':body_hash,'units':'metres','device':args.device,'solver':args.solver,
@@ -203,9 +229,14 @@ def _run(args):
         export_scene(destination/'rest.glb',body,garments)
         manifest['fits'][fit]={'status':'simulating','scene':f'{fit}/rest.glb','report':f'{fit}/fit-report.json'}
         write_json(manifest_path,manifest)
-        def progress(frame, last):
+        def progress(frame, last, points, ranges):
             manifest['fits'][fit]['frame']=frame
             manifest['fits'][fit]['p95_movement_mm']=last['p95_movement_m']*1000
+            preview=[]
+            for g,(a,b) in zip(garments,ranges):
+                copy={**g,'mesh':g['mesh'].copy()};copy['mesh'].vertices=points[a:b];preview.append(copy)
+            export_scene(destination/'preview.glb',body,preview)
+            manifest['fits'][fit]['scene']=f'{fit}/preview.glb?frame={frame}'
             write_json(manifest_path,manifest)
         try:
             simulation=simulate(body,garments,args,progress)
@@ -219,6 +250,15 @@ def _run(args):
             print(f'{fit}: failed: {error}',flush=True)
             continue
         print(f'{fit}: validating actual simulated cloth',flush=True)
+        trajectory=simulation.pop('_trajectory')
+        trajectory.tofile(destination/'drape.f32')
+        offset=0;layout=[]
+        for g in garments:
+            n=len(g['mesh'].vertices);layout.append({'name':g['name'],'offset':offset,'count':n});offset+=n
+        write_json(destination/'drape.json',{'format':'little-endian float32 [frame, vertex, xyz]',
+            'positions':'drape.f32','frames':len(trajectory),'vertices':offset,
+            'simulation_frames':simulation['sample_frames'],'frame_dt_seconds':1/60,
+            'layout':layout,'source':'actual Newton substeps; no synthetic animation'})
         export_scene(destination/'scene.glb',body,garments)
         for garment in garments:
             garment['mesh'].export(destination/(garment['name']+'.glb'))
@@ -235,9 +275,11 @@ def _run(args):
                 'body_roundtrip_max_error_m':body_error,'body_faces_unchanged':True,
                 'drafts':{g['name']:g['draft'] for g in garments},'simulation':simulation,
                 'quality':quality,'total_seconds':time.perf_counter()-started,
-                'artifacts':{p.name:digest(p) for p in destination.iterdir() if p.suffix in ('.glb','.npz','.obj')}}
+                'artifacts':{p.name:digest(p) for p in destination.iterdir()
+                             if p.suffix in ('.glb','.npz','.obj','.f32') or p.name=='drape.json'}}
         write_json(report_path,report)
         manifest['fits'][fit]={'status':status,'scene':f'{fit}/scene.glb','rest':f'{fit}/rest.glb',
+                              'drape':f'{fit}/drape.json',
                               'report':f'{fit}/fit-report.json','total_seconds':report['total_seconds'],
                               'quality':{k:v for k,v in quality.items() if k not in ('settling_history',)}}
         write_json(manifest_path,manifest)

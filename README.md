@@ -7,13 +7,18 @@ per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
 **Pipeline Step 2: recommended direction — EC2 GPU cloth simulation + Three.js viewing.**
 
-**Local male-avatar prototype:** `run_clothing.py` now provides Newton VBD cloth
-simulation and a Three.js viewer for the supplied `inputs/MHR-male-10027` body.
+**Local male-avatar prototype:** `run_clothing.py` provides Newton VBD cloth
+simulation with original flat sewing patterns and a Three.js viewer for the supplied
+`inputs/MHR-male-10027` body. The shirt has no pinned collar. The viewer can play
+actual saved draping frames and inspect the shirt and trousers up close.
 See `docs/local-avatar-clothing.md` for the one-command launch, actual scope,
 CPU-only environment, support constraints and validation status. This is a local
 prototype; it does not complete the full dataset/female/GPU benchmark scope below.
 
-![Verified local tight, medium and loose outfits](reports/local-avatar-preview.png)
+The earlier body-shell prototype passed numerical checks but failed visual review.
+Its archived comparison is shown below; it is not a claim of realistic fabric fit.
+
+![Earlier shell prototype, before the sewn cloth revision](reports/local-avatar-preview.png)
 
 The user confirmed future commercial use and approved Python/GPU simulation on
 EC2. The source review recommends modern Newton/Warp: compare SolverStyle3D and

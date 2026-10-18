@@ -25,7 +25,7 @@ def validate(body, garments, settled, history):
     result = {'finite': True, 'settled': bool(settled), 'garments': {},
               'tolerances': {'body_penetration_m': .001, 'segment_endpoint_exclusion_m': 1e-5},
               'physical_fit_calibrated': False,
-              'limitations': ['Prototype body-derived garment draft', 'Fabric parameters are uncalibrated assumptions',
+              'limitations': ['Original prototype tee and elastic-waist trouser sewing patterns', 'Fabric parameters are uncalibrated assumptions',
                               'No comparison against physical garments or MD/VStitcher yet']}
     for garment in garments:
         mesh = garment['mesh']

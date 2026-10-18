@@ -66,7 +66,7 @@ def main():
     code=0
     if not args.view_only:
         code=subprocess.call([str(python),'-u','-m','pipeline.avatar_clothing','--device',args.device,
-            '--steps',str(args.steps),'--substeps','4','--iterations','8','--face-budget','1200'],cwd=ROOT)
+            '--steps',str(args.steps),'--substeps','4','--iterations','12','--face-budget','1800'],cwd=ROOT)
         if code not in (0,2):
             print('Cloth run failed. Inspect the terminal and saved manifest before retrying.')
             return code

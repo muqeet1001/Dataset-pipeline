@@ -32,7 +32,7 @@ signatures/checksums before reusing them.
 For explicit simulation control:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pipeline.avatar_clothing --fits tight medium loose --device cpu --steps 150 --substeps 4 --iterations 8 --face-budget 1200
+.\.venv\Scripts\python.exe -m pipeline.avatar_clothing --fits tight medium loose --device cpu --steps 150 --substeps 4 --iterations 12 --face-budget 1800
 ```
 
 `--device cuda:0` selects NVIDIA CUDA on a compatible host. This computer has
@@ -47,36 +47,37 @@ missing/corrupt artifacts and failed cases rerun. An output lock prevents two
 current programs from writing the same job. Exit code 2 means outputs require
 review, not an accepted dataset sample. Exceptions are recorded and withheld.
 
-## What the prototype actually does
+## Sewn cloth revision
 
-It constructs continuous outer level surfaces around a voxel draft of the supplied
-body, then cuts shirt/pants openings and grades the rest geometry for three sizes.
-The 6 mm draft grid is only used for constructing cloth; the simulation collider
-and final validation use the original full MHR body. The tight shirt includes
-6 mm of additional hem room for the underlying pants. Openings are checked by regression
-tests. Physical triangle rest coordinates are stored separately from appearance
-UVs. These are body-derived shell drafts, **not production tailor sewing patterns**.
-There is one male outfit style; random style diversity and female adaptation have
-not been implemented in this local prototype.
+The earlier level-surface draft passed geometry checks but looked rigid. It is
+preserved in Git history; it is not evidence of realistic garment fit. The active
+adapter now uses original flat front/back tee and trouser cut pieces with paired
+sewn shoulder, side, inside-leg and crotch boundaries. The tee has a scoop neck,
+short sleeve cuffs and a hem covering the waistband. Chest, hip and cuff cut
+sizes distinguish tight, medium and loose fits. These are prototype patterns
+for the supplied male A-pose, not a general tailoring system.
 
-Both garments share one Newton VBD simulation, with gravity, membrane/bending
-behavior, damping, body contact, self-contact and inter-garment contact. A narrow
-collar support band and a supported waistband stabilize this static
-pilot. These supports are saved in the reports/NPZs; the rest of the cloth is free.
-The material preset and supports are assumptions requiring calibration.
+The cut pieces define triangle rest metrics, area, mass and strain reference.
+All bending rest angles are zero. The curved arrangement is only the starting
+state. The shirt has **no pinned collar or other fixed vertices**: shoulder and
+body contact support it. Only the trouser waistband edge is supported, standing
+in for an elastic waistband. Both garments run together with gravity, bending,
+membrane forces, body contact, self-contact and inter-garment contact.
 
 On CPU, custom Warp Jacobi contact constraints sample vertices, edge quarters
-and triangle quadrature points against the full, unchanged MHR triangle mesh
-inside each physics substep. This supplements Newton's vertex/body contact;
-it is not post-export shrinkwrap. Newton's alternative full-surface rigid SDF
-contact path requires CUDA. The local implementation is therefore a **VBD plus
-sampled mesh-contact prototype**, not a claim about unmodified Newton performance.
+and triangle quadrature points against the full unchanged MHR triangle mesh
+inside each physics substep. This supplements Newton body contact. The final
+cloth is not shrinkwrapped or repaired after export. Fabric properties remain
+an assumed cotton-like preset; a physical swatch and reference fitting are
+needed for calibration.
 
-Style3D's six upstream component tests passed on CPU, but the first normal-offset
-garment adapter produced NaNs at the first simulated frame. The revised level-surface
-adapter has not been validated with Style3D. Style3D is retained as an
-experimental CLI option, and VBD is the tested default. This does not establish
-that Style3D itself cannot simulate MHR; it records the adapter's observed failure.
+`drape.f32` and `drape.json` contain actual recorded simulation states, topology
+ranges and physical times. **Play drape** in the viewer plays these states at
+quarter speed; the timeline lets you inspect any recorded frame. The final GLB
+is the final solver state. Playback never animates or rescales the body.
+
+Style3D remains experimental; VBD is the locally tested default. No EC2 GPU
+benchmark or equivalence with MD/VStitcher has been established.
 
 ## Validation scope
 
@@ -87,13 +88,15 @@ roundtrip. A numerical pass is labelled `numerical_pass_unvalidated_fabric`.
 No body hiding, body rescaling or export-only correction is used to manufacture
 a pass. Max source-body roundtrip error is checked against 0.0001 mm.
 
-The final local pilot passed all three fits, including independent reverse
-body-edge crossing checks. `reports/local-avatar-pilot.json` contains the actual
+The previous shell pilot passed all three fits, including independent reverse
+body-edge crossing checks, but failed the user's visual realism review. The sewn
+revision must be evaluated separately. `reports/local-avatar-pilot.json` contains the actual
 metrics and timing scope; `reports/local-avatar-resume.json` records an actual
 second launcher run that reused all three scenes without changing them.
 
 Seven local tests cover body identity/units, unknown metadata rejection, graded
-rest sizes and correct garment openings, a triangle crossing missed by vertex-only
+flat rest sizes, manifold sewing topology, correct garment openings, zero shirt
+pins, noncollapsed arrangement triangles, a triangle crossing missed by vertex-only
 containment, movable/pinned contact behavior, corrupt receipt handling and output
 locking. The existing 27 project tests remain a separate regression suite.
 
@@ -102,3 +105,4 @@ program starts from an existing avatar; it does not regenerate the 6,068 MHR
 bodies, implement female garments, or mark the full commercial dataset ready.
 Future EC2 work should reuse this tested code and add those stages through the
 existing handoff contract after the remaining garment-quality gates pass.
+
