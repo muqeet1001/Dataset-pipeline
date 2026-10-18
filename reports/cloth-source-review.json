@@ -1,0 +1,340 @@
+{
+  "commercial_use_confirmed": true,
+  "gpu_backend_accepted": true,
+  "papers": [
+    {
+      "sha256": "77e15532e9f51b18c05823b8995662ebec669501eb5cddce72fef932c2452d21",
+      "url": "https://arxiv.org/pdf/2212.07242"
+    },
+    {
+      "sha256": "57d8ad716a06a4e6d37a7f54b615f627020dc348463ed5f4ac0892cfc7b25a81",
+      "url": "https://cg.cs.tu-dortmund.de/publications/2024-garment.pdf"
+    },
+    {
+      "access": "web text, not downloaded or hashed",
+      "url": "https://arxiv.org/pdf/2405.09522"
+    }
+  ],
+  "recommendation": "Benchmark modern Newton SolverStyle3D and SolverVBD; use Three.js viewer",
+  "repositories": [
+    {
+      "commit": "215195a7716810c2a6da069724409e5286a250d9",
+      "commit_date": null,
+      "files_retrieved_for_review": [
+        {
+          "path": "README.md",
+          "sha256": "ace391a804c853e1455e412d142adf8e7d76635279461864396e6c6bace4aa8b",
+          "url": "https://github.com/Dolorousrtur/CCCollisions/blob/215195a7716810c2a6da069724409e5286a250d9/README.md"
+        }
+      ],
+      "finding": "README states torch-mesh-isect license also applies; not cleared for this commercial use.",
+      "repository": "Dolorousrtur/CCCollisions"
+    },
+    {
+      "commit": "d606432c2f7e96b05664e6a4ffb9d1cb98705baf",
+      "commit_date": "2025-08-02T17:11:35Z",
+      "files_retrieved_for_review": [
+        {
+          "path": "ccraft.yml",
+          "sha256": "3341d216970749d31fbbc040721a4037350487816fca80cd137e603c3292a2f2",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/ccraft.yml"
+        },
+        {
+          "path": "configs/aux/from_any_pose.yaml",
+          "sha256": "5a6798b4c155c9745c6a013ef5ee2d17be82c03b3c9932de69c70da0f9d93599",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/configs/aux/from_any_pose.yaml"
+        },
+        {
+          "path": "datasets/from_any_pose.py",
+          "sha256": "54d0d891f99b2df4563e3d0bc58b7eb30b5412ed8ccd13166724d78e12e9a1f0",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/datasets/from_any_pose.py"
+        },
+        {
+          "path": "GarmentImport.ipynb",
+          "sha256": "8265e2fa05f0698ddc837374bf75bc01df5de53f1b8a9ca6a703a3c78e6c9fbf",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/GarmentImport.ipynb"
+        },
+        {
+          "path": "Inference_from_mesh_sequence.ipynb",
+          "sha256": "2a679c08e5b6e75bc930f87472febe27f20620aa4b41ef9395362f986f56c064",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/Inference_from_mesh_sequence.ipynb"
+        },
+        {
+          "path": "INSTALL.md",
+          "sha256": "39c5a6b000267f34c47d0991d6fb79c38aa8b6422984602e1af011216ddff20b",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/INSTALL.md"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "b8d7d11abe19c47efd66d1453e1952116b08fdd9175dfc0cd58c97e3a0c4d3f5",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/LICENSE"
+        },
+        {
+          "path": "README.md",
+          "sha256": "75ba64c3b694edd50093b7a0723aefb8f4626b1fceeddf69600085ef33c4403e",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/README.md"
+        },
+        {
+          "path": "TRAINING.md",
+          "sha256": "17b550ca0a3ded7c18557fc236f2a9dfbfed3d330d0ad225c92513f79c673ef9",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/TRAINING.md"
+        },
+        {
+          "path": "utils/datasets.py",
+          "sha256": "a60e3cbffc9a8f37e871d184a9e310d7a3c483b0a923a677bc1c0d404189667f",
+          "url": "https://github.com/Dolorousrtur/ContourCraft/blob/d606432c2f7e96b05664e6a4ffb9d1cb98705baf/utils/datasets.py"
+        }
+      ],
+      "finding": "Main code MIT; supplied CCCollisions dependency refers to a noncommercial license.",
+      "repository": "Dolorousrtur/ContourCraft"
+    },
+    {
+      "commit": "9bc1076195979ac6c027fdd729c6e960cad62f2a",
+      "commit_date": "2025-05-20T13:00:41Z",
+      "files_retrieved_for_review": [
+        {
+          "path": "datasets/from_any_pose.py",
+          "sha256": "962b56fecf1a3294cfbe00da75e184aa2a269df89d78190f9037290f10cd74e3",
+          "url": "https://github.com/Dolorousrtur/HOOD/blob/9bc1076195979ac6c027fdd729c6e960cad62f2a/datasets/from_any_pose.py"
+        },
+        {
+          "path": "hood.yml",
+          "sha256": "b8df4443da198ba10033535a9c0f53e58f380933e60b1d63ebde4552c91b3a50",
+          "url": "https://github.com/Dolorousrtur/HOOD/blob/9bc1076195979ac6c027fdd729c6e960cad62f2a/hood.yml"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "b8d7d11abe19c47efd66d1453e1952116b08fdd9175dfc0cd58c97e3a0c4d3f5",
+          "url": "https://github.com/Dolorousrtur/HOOD/blob/9bc1076195979ac6c027fdd729c6e960cad62f2a/LICENSE"
+        },
+        {
+          "path": "README.md",
+          "sha256": "acbdf4a35e1d1503d9abf45752b61d337ff03576f553078dbcdc3f2305178662",
+          "url": "https://github.com/Dolorousrtur/HOOD/blob/9bc1076195979ac6c027fdd729c6e960cad62f2a/README.md"
+        },
+        {
+          "path": "RepoIntro.md",
+          "sha256": "516fd5f70051417de4924d2bd53f83fd1120490be06335e92628977b3313f438",
+          "url": "https://github.com/Dolorousrtur/HOOD/blob/9bc1076195979ac6c027fdd729c6e960cad62f2a/RepoIntro.md"
+        }
+      ],
+      "finding": "Main code MIT; original method lacks garment-garment/self-collision handling.",
+      "repository": "Dolorousrtur/HOOD"
+    },
+    {
+      "commit": "d449629979028123a5c4dc9e732a2ec19b7fce31",
+      "commit_date": "2025-06-29T12:17:42Z",
+      "files_retrieved_for_review": [
+        {
+          "path": "assets/bodies/body_params.py",
+          "sha256": "087305820f7ae71d0be1839b686deff7f6bde834c5f12b437e6f0483c8f58f82",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/assets/bodies/body_params.py"
+        },
+        {
+          "path": "assets/design_params/default.yaml",
+          "sha256": "703f5cf470d5bc6e4c92e61dab415c7f27a71f0f6c853b0a55fa57815e1c37e1",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/assets/design_params/default.yaml"
+        },
+        {
+          "path": "assets/design_params/t-shirt.yaml",
+          "sha256": "edb80d740c9fea59b548c2d41c39e1ac22a50e1c59e727b7d0b75637175d4083",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/assets/design_params/t-shirt.yaml"
+        },
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "a4ac4c9dbc9c6b6e5389a01ad62066c6f63c60c338f275b5858030999013a608",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/CHANGELOG.md"
+        },
+        {
+          "path": "docs/Installation.md",
+          "sha256": "f944cf6c46bc7ad307a1f906b139f01219abb75d63fbe47a21f84ba27b0c527a",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/docs/Installation.md"
+        },
+        {
+          "path": "docs/Running_data_generation.md",
+          "sha256": "630bc1c9a637832b0854fbcb6236f5efce499191bcfa84afd09fea4aeaa0d992",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/docs/Running_data_generation.md"
+        },
+        {
+          "path": "docs/Running_garmentcode.md",
+          "sha256": "5881adba8c38c888685a8a6844299b9410d44c51c985588ecf48df1421ebc070",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/docs/Running_garmentcode.md"
+        },
+        {
+          "path": "docs/Running_Maya_Qualoth.md",
+          "sha256": "fa4a9c05a949a40d088f78756c7fe74faa406e8dcd6b93328f654bc92b6c07ba",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/docs/Running_Maya_Qualoth.md"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "18da3e9ecad0bc2fc9ea28fb66b57913457da76b52d5236924588a64b1f2b7d3",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/LICENSE"
+        },
+        {
+          "path": "pattern_data_sim.py",
+          "sha256": "709f69b204931de3096e647637ae748873211155ff347985ae00b215f09ba62f",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pattern_data_sim.py"
+        },
+        {
+          "path": "pygarment/meshgen/boxmeshgen.py",
+          "sha256": "c9e90175d3644bc2f98c04a6c4af0cd14d29e565a35ab479185f0f07d0473ca9",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pygarment/meshgen/boxmeshgen.py"
+        },
+        {
+          "path": "pygarment/meshgen/garment.py",
+          "sha256": "d52054439484a156cec8e359c30df1de2533f7085d6a2646bfaaa36c4387db6f",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pygarment/meshgen/garment.py"
+        },
+        {
+          "path": "pygarment/meshgen/sim_config.py",
+          "sha256": "b0536e28e4bff0028672ed56ff44ecd7596a9f9e1c0b24ab79f77c869ec5632d",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pygarment/meshgen/sim_config.py"
+        },
+        {
+          "path": "pygarment/meshgen/simulation.py",
+          "sha256": "81267d9e742c4bb0a377cd394301ce95cb1f525c68c01b643d268742f3aea0cc",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pygarment/meshgen/simulation.py"
+        },
+        {
+          "path": "pyproject.toml",
+          "sha256": "ea08b0cbbd2a52ffe5666f74dd6470dff1821fef7935114eb6dc8295f4d40a4e",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/pyproject.toml"
+        },
+        {
+          "path": "ReadMe.md",
+          "sha256": "ccd336e366ef26296b46a3e1dc18d36b6ef04747612cf5e3789a7be6d842cbd0",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/ReadMe.md"
+        },
+        {
+          "path": "test_garment_sim.py",
+          "sha256": "c703420e6d949ae3ff0688efc74acc66f9105ca6192e6ae6e92ffca68f668c75",
+          "url": "https://github.com/maria-korosteleva/GarmentCode/blob/d449629979028123a5c4dc9e732a2ec19b7fce31/test_garment_sim.py"
+        }
+      ],
+      "finding": "Main pattern code MIT; requires separate restricted Warp fork for supplied draping pipeline.",
+      "repository": "maria-korosteleva/GarmentCode"
+    },
+    {
+      "commit": "63baf6855efdd89b2834b74640f84b3bb0d86b50",
+      "commit_date": null,
+      "files_retrieved_for_review": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "d26cbb5a6241fb9516523ce9dcba9715d97002f9f1b6ab82ec8eaaab88bf1b2a",
+          "url": "https://github.com/maria-korosteleva/NvidiaWarp-GarmentCode/blob/63baf6855efdd89b2834b74640f84b3bb0d86b50/LICENSE.md"
+        },
+        {
+          "path": "README.md",
+          "sha256": "99f7b776e2443e3dd372e53d247776605d42f468e57d5c5bed49bd8af8a2ba6c",
+          "url": "https://github.com/maria-korosteleva/NvidiaWarp-GarmentCode/blob/63baf6855efdd89b2834b74640f84b3bb0d86b50/README.md"
+        }
+      ],
+      "finding": "NVIDIA Source Code License section 3.3 limits use to research/evaluation.",
+      "repository": "maria-korosteleva/NvidiaWarp-GarmentCode"
+    },
+    {
+      "commit": "f49482ce07e20764110fd147a67c7334eeae638d",
+      "commit_date": "2026-10-17T22:05:02Z",
+      "files_retrieved_for_review": [
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "980bcba39b574059e9865fff980409d3e311a6b5acb83552d33343905e7fc127",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/CHANGELOG.md"
+        },
+        {
+          "path": "LICENSE.md",
+          "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/LICENSE.md"
+        },
+        {
+          "path": "newton/_src/solvers/style3d/__init__.py",
+          "sha256": "af1ee32538886ac9e17c128b6907bd0f726affbc0d51d43bc86a70a87e12ab32",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/_src/solvers/style3d/__init__.py"
+        },
+        {
+          "path": "newton/_src/solvers/style3d/collision/__init__.py",
+          "sha256": "3ab51c5bbdae3aa45181e365e034fb3e267497bb2fd2d4d424ecf5ccb1887153",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/_src/solvers/style3d/collision/__init__.py"
+        },
+        {
+          "path": "newton/_src/solvers/style3d/collision/bvh/__init__.py",
+          "sha256": "66f84be43faa66b57854cbf7aa6d6144381d588736439d9dc34f460a9001ff0f",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/_src/solvers/style3d/collision/bvh/__init__.py"
+        },
+        {
+          "path": "newton/_src/solvers/style3d/solver_style3d.py",
+          "sha256": "fae02cbda8b7c020932d456dfe8a214d0ed375f0d949274b0d9a0e2a40432f91",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/_src/solvers/style3d/solver_style3d.py"
+        },
+        {
+          "path": "newton/_src/solvers/vbd/solver_vbd.py",
+          "sha256": "b97d231d3cd74725b1d00d44ba6ed71af651286378c0180c2f909bee2cf6760d",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/_src/solvers/vbd/solver_vbd.py"
+        },
+        {
+          "path": "newton/examples/cloth/example_cloth_h1.py",
+          "sha256": "5d7ec6a8db74242981660c5d98d6e289bfc66de40cc9d280a361dc75679f4ff2",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/examples/cloth/example_cloth_h1.py"
+        },
+        {
+          "path": "newton/examples/cloth/example_cloth_style3d.py",
+          "sha256": "599033f0da2105a1903634836725e650a9c2ffaa728fa96da76f795608f97810",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/examples/cloth/example_cloth_style3d.py"
+        },
+        {
+          "path": "newton/tests/test_cloth.py",
+          "sha256": "b606ed6f33260e135d5e7844f91dfc29562926b74eb0be1566315ee0bc1aa29d",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/tests/test_cloth.py"
+        },
+        {
+          "path": "newton/tests/test_collision_cloth.py",
+          "sha256": "bb42db34a5af1fb0ab6a5d875818db9bfcac4c01cd87d4b9aafb5e47e882ea17",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/tests/test_collision_cloth.py"
+        },
+        {
+          "path": "newton/tests/test_solver_style3d.py",
+          "sha256": "013edb84a90f0de84297e8e315c711357d1646b4708a251c24e6548d79f36164",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/newton/tests/test_solver_style3d.py"
+        },
+        {
+          "path": "PUBLICATIONS.md",
+          "sha256": "e2c2b3d4fd23a75348e56e08ebefa3132bf3374d1a92d78016038ebea419ca7f",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/PUBLICATIONS.md"
+        },
+        {
+          "path": "pyproject.toml",
+          "sha256": "92dc16dea13ac3d6f8394bdea6f0c8e4bf284a6997f23ff069a15c24701247cf",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/pyproject.toml"
+        },
+        {
+          "path": "README.md",
+          "sha256": "6f77802844f83a1d2ffe6088114578491e0201bcbc64ef73a6a6d9baaa565dd1",
+          "url": "https://github.com/newton-physics/newton/blob/f49482ce07e20764110fd147a67c7334eeae638d/README.md"
+        }
+      ],
+      "finding": "Apache-2.0 main code and inspected solvers; first commercial implementation candidate, not MHR validated.",
+      "repository": "newton-physics/newton"
+    },
+    {
+      "commit": "85b30177821a1527e3fe62fcf8ce65262d7c1879",
+      "commit_date": null,
+      "files_retrieved_for_review": [
+        {
+          "path": "LICENSE",
+          "sha256": "2232f2f9c8f6229c579c4515ac4b541824c9cef597d39c0dc4c17eacbf60114c",
+          "url": "https://github.com/vchoutas/torch-mesh-isect/blob/85b30177821a1527e3fe62fcf8ce65262d7c1879/LICENSE"
+        },
+        {
+          "path": "README.md",
+          "sha256": "2230f1b7e1aea5e78d3e0241ba311385d5be323d60058b97eb6bd12686efbbd1",
+          "url": "https://github.com/vchoutas/torch-mesh-isect/blob/85b30177821a1527e3fe62fcf8ce65262d7c1879/README.md"
+        }
+      ],
+      "finding": "Noncommercial scientific research license also restricts commercial neural-network training.",
+      "repository": "vchoutas/torch-mesh-isect"
+    }
+  ],
+  "review_date": "2026-10-18",
+  "scope": "Primary-source and source-code inspection, not execution of upstream tests or EC2 benchmarking",
+  "solver_runs_performed": 0
+}

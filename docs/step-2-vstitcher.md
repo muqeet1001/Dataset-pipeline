@@ -1,8 +1,8 @@
 # Step 2: VStitcher clothing integration
 
 **Historical integration:** the user has put VStitcher aside for now. Continue
-with the [active Three.js EC2 handoff](ec2-threejs-clothing-handoff.txt), which
-requires the clothing simulation to run inside a browser. The native results
+with the [active GPU simulation EC2 handoff](ec2-gpu-clothing-handoff.txt), which
+uses EC2 simulation and Three.js viewing for commercial use. The native results
 and prepared implementation below remain a record of earlier work.
 
 Status: **integration prepared; native avatar import confirmed; clothing simulation pending**.
@@ -10,8 +10,8 @@ The initial preparation checkpoint is followed by a successful desktop import pi
 on 2026-10-18. The EC2 VStitcher desktop was already signed in; no password was
 entered or stored by this pipeline.
 
-For continuation inside Codex CLI on EC2, use the complete
-[EC2 handoff prompt](ec2-codex-handoff.txt), which records the implementation,
+The historical
+[VStitcher EC2 prompt](ec2-codex-handoff.txt) records the implementation,
 verified limits, native setup, commands and acceptance criteria.
 
 ## Required behavior

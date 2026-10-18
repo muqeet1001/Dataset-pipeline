@@ -1,0 +1,37 @@
+{
+  "artifacts": {
+    "reports/cloth-benchmark-plan.json": {
+      "sha256": "74e1f5e7b000e469bf94e9b3fdc6af054c3bfae348b62697f31308613c35443e"
+    },
+    "reports/cloth-source-review.json": {
+      "sha256": "fc6a9648d95a1c1f00c5b58b62c89225b3c774d3877168ba1f36a4409e66a4b6"
+    },
+    "scripts/prepare_cloth_benchmark.py": {
+      "sha256": "cb608267ef16be9159ec76df62b0ec78ab91f614b534fec32056ec60bac55215"
+    }
+  },
+  "ec2_gpu_benchmark_run": false,
+  "mhr_cloth_pilot_run": false,
+  "plan_checks": {
+    "all_cases_not_run": true,
+    "both_shirt_and_pants_in_every_case": true,
+    "cases_per_backend": 60,
+    "cases_per_fit": 20,
+    "dataset_source_hashes_verified_by_existing_importer": true,
+    "deterministic_byte_identical_repeated_generation": true,
+    "subjects_by_sex": {
+      "female": 7,
+      "male": 7
+    },
+    "unique_subjects": 14
+  },
+  "project_tests": {
+    "command": ".venv/Scripts/python.exe -m pytest tests -q",
+    "does_not_validate": "cloth simulation or physical garment fit",
+    "duration_seconds": 19.52,
+    "passed": 27
+  },
+  "review_date": "2026-10-18",
+  "scope": "Source comparison and reproducible case preparation; no cloth backend implemented",
+  "upstream_solver_tests_run": false
+}

@@ -1,0 +1,224 @@
+ACTIVE EC2 HANDOFF: GPU CLOTH SIMULATION + THREE.JS VIEWING
+
+Continue Dataset-pipeline on my existing EC2 machine. I have confirmed that the
+dataset is for a commercial product or future commercial model training. Python
+GPU simulation on EC2 is allowed; use Three.js to view the exported results.
+This supersedes the browser-only task in ec2-threejs-clothing-handoff.txt and the
+older VStitcher task. Keep the prior code and evidence as history.
+
+Read docs/cloth-technology-evaluation.md and reports/cloth-source-review.json.
+The current recommendation is modern Newton/Warp, testing SolverStyle3D first
+and SolverVBD alongside it. This is a source-based recommendation; no actual MHR
+cloth benchmark has passed yet. Implement and test the real workflow, commit
+each meaningful milestone and push it. Do not stop at a plan or demo on a vendor
+avatar. Preserve unrelated local changes; do not reset or force-push.
+
+1. EXISTING PROJECT
+
+Repository: https://github.com/muqeet1001/Dataset-pipeline
+Use the latest main, inspect git status and applicable AGENTS.md, and use a
+codex/ branch if creating a new branch. Read README.md, docs/step-1-done.md,
+docs/pipeline-contract.md and the actual pipeline code.
+
+Step 1 works: ANSUR II record -> official Meta MHR body -> fitting checks and
+reproducible saved inputs -> per-record checkpoint and downstream handoff.
+There are 6,068 source records: 4,082 male and 1,986 female. Original files are
+already in data/raw/ansur2, from Twinnie-Inc/TWINNIE, Mahmoud-Dataset-5.8, commit
+2f901e81447103dba946b301d844f0fd6476a710. CSV encoding is Latin-1; source lengths
+are millimetres and weightkg is tenths of a kilogram. Reuse the existing importer.
+
+Official MHR source: third_party/MHR, pinned commit
+d96fafa33bbf018647c70c3525e91f53e79d2a14. The TorchScript v1.0.1 asset is normally
+assets/mhr_model.pt and is ignored by Git. Reuse verified assets and the existing
+downloader/provenance; do not redownload unnecessarily.
+
+Start with the two committed examples:
+  examples/fitted/ansur2_male_10027    stature 177.6 cm
+  examples/fitted/ansur2_female_10037  stature 156.0 cm
+Each contains body.ply, mhr-inputs.npz, source-record.json and fit-report.json.
+Meshes have 18,439 vertices, 36,874 triangles, centimetre units, Y up and feet at
+Y=0. Skeleton coordinates are explicitly unscaled; apply the recorded transform
+before using them as body-space landmarks.
+
+Current fitting matches stature and chest/waist/hip section-perimeter proxies.
+It does not exactly reproduce all source measurements. Use measurements of the
+generated MHR surface for garment construction; retain original ANSUR values
+separately. Do not claim exact source-person recovery. The full 6,068-body batch
+has not been generated. The previous 27 passing tests did not validate cloth.
+
+2. HARDWARE, VERSIONS AND DEPENDENCIES
+
+Inspect the actual OS, GPU, available VRAM, NVIDIA driver and CUDA visibility in
+the execution environment. RDP display availability does not prove CUDA works.
+The reviewed Newton commit is f49482ce07e20764110fd147a67c7334eeae638d. Start from
+this known source or explicitly record and justify another compatible pin.
+
+Newton's reviewed README supports Windows and Linux. Fresh installs select Warp
+1.18, requiring Turing+ and driver R580+. It documents Warp 1.17 for some older
+GPU/driver combinations. Verify actual compatible versions; do not blindly upgrade
+the driver, alter EC2 infrastructure or buy a new instance. Report a hard hardware
+limitation with evidence if it prevents a GPU pilot. Use separate environments
+if needed to preserve the existing Python 3.11+ MHR pipeline.
+
+Newton's inspected solver sources are Apache-2.0. Do not silently install the
+research-only NvidiaWarp-GarmentCode fork or CCCollisions/torch-mesh-isect stack
+for this commercial dataset. GarmentCode's main pattern code is MIT and may be
+assessed separately with its dependencies and assets; its supplied simulator is
+a different licensing case. Do not assume a model checkpoint or demo garment has
+the main repository's license. Record all incorporated source/asset provenance.
+Use original procedural garment templates if suitable reusable assets are absent.
+
+3. IMPLEMENT THE PER-RECORD FLOW
+
+One invocation must:
+  read the next dataset record
+  -> generate or resume its accepted MHR body
+  -> select a shirt and pants from the matching male/female catalog using a seed
+  -> grade and place the outfit
+  -> run tight, medium and loose simulations on the SAME body
+  -> validate, export and record all three results
+  -> persist a durable handoff to the next pipeline stage
+  -> continue to the next record.
+
+Keep style and fabric fixed across the three fits; change documented garment
+rest dimensions and ease. Persist selection/seed so resume never reselects clothes.
+There must be no per-record upload, interactive garment placement or manual click.
+Use a long-lived GPU worker to avoid reloading an engine for every person.
+Do not implement video generation, motion sequences, model training, deployment
+services or other future stages. Diagnostic screenshots are part of validation.
+
+4. NEWTON SOLVERS AND GARMENT CONSTRUCTION
+
+Inspect upstream:
+  newton/examples/cloth/example_cloth_style3d.py
+  newton/_src/solvers/style3d/solver_style3d.py
+  newton/tests/test_solver_style3d.py
+  newton/tests/test_cloth.py
+  newton/tests/test_collision_cloth.py
+  newton/_src/solvers/vbd/solver_vbd.py
+
+The Style3D example imports a garment, physical panel coordinates and a collider.
+It is an example using fixed vendor assets, not an automatic MHR fitter. The
+open-source Newton SolverStyle3D is the candidate here; do not confuse it with
+requiring a separate commercial Style3D application.
+
+Build simple short-sleeve shirt and long-pants templates, with suitable male and
+female catalog pools. A single template per pool is acceptable for the first
+pilot, but report its limited variety. Define seams, openings, rest geometry,
+physical panel coordinates, mass/thickness and fabric presets. Appearance UVs
+are not automatically fabric coordinates in metres. Model any waistband support
+or elastic behavior explicitly. Avoid holding an entire garment against the skin.
+
+Find neck, shoulders, armpits, waist, hips, crotch and limbs using validated MHR
+landmarks/segmentation. Keep MHR vertex indices separate from SMPL/CAESAR indices.
+Align openings with correct body parts and ensure shirt/pants layer ordering.
+Prepare sensible low-penetration initial geometry; grossly entangled garments
+must not be accepted just because a solver can move vertices.
+
+Preserve the body as a static collider with its full dimensions unchanged. Convert
+cm to m through a recorded transform and validate inverse/export transforms.
+Both garments must participate in a common collision space. Exercise cloth-body,
+self and shirt-pants contact, including triangle/edge crossings; do not simulate
+the two garments independently and assume the combined outfit is valid.
+
+Use actual gravity, stretch/shear/bending, damping, friction and thickness. Choose
+bounded steps/substeps/iterations and a measured settling criterion. Check against
+the full MHR mesh even if a simpler collider is used during coarse placement.
+Do not hide the body, inflate collision distances or shrinkwrap cloth to conceal
+fit failures. Record retries and failure reasons.
+
+5. THREE FIT CONDITIONS
+
+Grade shirt torso/sleeves and pants waist/hips/thighs/lengths while preserving the
+same style and fabric. Keep intended tight/medium/loose labels distinct from the
+measured resulting fit. The earlier primary-girth ease bands of 0-6%, 6-14% and
+14-30% were prototype targets, not universal standards; calibrate sensible profiles
+against actual results. Negative ease requires appropriate stretch validation.
+Measure the body and rest garment at compatible anatomical locations. Changing
+stiffness, clearance or body size alone does not create the required fit variants.
+
+6. BENCHMARK BEFORE SELECTING THE SOLVER
+
+Run python scripts/prepare_cloth_benchmark.py to reproduce the NOT-RUN plan in
+reports/cloth-benchmark-plan.json. That script only selects cases; it does not
+simulate anything. Resolve the named outfit/fabric profiles to actual assets and
+numeric parameters before execution. Do not mark its existing not_run cases passed
+without real result files and metrics.
+
+First complete the six-case pilot: the existing male and female, three fits each,
+shirt AND pants in every case. Compare SolverStyle3D and SolverVBD using equivalent
+body/rest geometry, material intent, resolution and quality thresholds. Run the
+applicable upstream component tests for the selected pinned version and meaningful
+new integration tests, but distinguish these from real garment quality tests.
+
+Expand to the prepared 12-body coverage set, material and style cases after pilot
+quality passes. The full plan contains 60 unique cases per solver. Record failures,
+not just selected attractive outputs. Add true body-range endpoints before release.
+Exercise a small recoverable overlap, impossible size/wrong layer order, bad units
+and topology, timeout/crash, partial-fit resume, corrupt export and asset/config
+invalidation. Follow the concrete measurement criteria in the evaluation document.
+
+Report cold start separately from three warm timing repetitions of each pilot
+case. Split total time into MHR, construction/grading, placement, solver setup,
+simulation, validation and export. Count retries/failures. Record GPU/VRAM, driver,
+source/version pins, mesh counts, median/p95, peak VRAM and accepted outfits/hour.
+My rough 40 minutes was ONE outfit including setup, simulation and export. Compare
+matched end-to-end work; an inference fps claim is not equivalent to that number.
+No target speed or MD/VStitcher-equivalent physics has been established yet.
+
+Choose the solver that passes the common quality gates with the best accepted
+outfit throughput and least manual work. Prefer Style3D for the first garment
+implementation, but use VBD if the evidence supports it. Do not force a successful
+conclusion if both fail the required quality. No automatic full-dataset debug run.
+
+7. EXPORT, THREE.JS VIEWER AND RUNNER
+
+Integrate through the existing next-stage consumer/runner contract. Preserve
+Step 1 locking, idempotency and pending/failed delivery semantics. Keep old native
+VStitcher code isolated and usable as historical work, not a required dependency.
+Use structured local jobs/results, timeouts and atomic receipts. No public upload
+or new cloud service is needed for this step.
+
+For each subject preserve original body/inputs and write:
+  outfit selection, seed, template/rest-geometry and grading parameters
+  tight/: scene.glb, shirt.glb, pants.glb, fit/simulation report
+  medium/: corresponding exports and report
+  loose/: corresponding exports and report
+  overall manifest, checksums, validation status and next-stage handoff.
+
+scene.glb contains unchanged body plus both garments. Separate garment GLBs contain
+their named garment only. Save any rest/panel data needed to reproduce simulation.
+Record units/transforms, original and simulated body hashes, sex, source/mesh
+measurements, asset hashes/licenses, solver/dependency version pins, actual fabric
+assumptions and attempt parameters. Keep failed-attempt evidence.
+
+Make a Three.js viewer that loads actual outputs, switches fits, rotates/zooms,
+shows the intended/measured fit information, and downloads supported artifacts.
+For simulation controls, send a local job to the GPU worker and show real status.
+A standalone uploaded avatar needs explicit units/sex metadata or an explicitly
+unisex template; do not infer sex from appearance. Add no later video stage.
+
+Verify exports by reloading them and checking units/body geometry and collisions.
+Show actual male/female screenshot evidence in front/back/side views. A vendor
+demo, generated illustration or mocked API response is not pilot evidence.
+Run the combined program twice, corrupt/delete one clothing artifact and show
+resume reuses accepted MHR bodies and retries only invalid clothing. Failed fits
+must remain withheld from downstream delivery.
+
+8. COMPLETION AND COMMITS
+
+Commit working environment/provenance and basic real shirt pilot, then outfit and
+three fits, then benchmarking/quality fixes, then runner/viewer/resume integration
+as meaningful milestones. Preserve a working project at each checkpoint.
+
+Update README with actual working commands for preview, clothing on an existing
+avatar, the two-subject combined pilot, benchmark execution and full dataset run.
+Do not invent implemented flags: add and test them before documenting as working.
+Existing --limit 2 does not guarantee one male and one female; use both explicit
+--subject-id values when appropriate. Keep existing tests passing.
+
+Final report must state real pass/failure counts, measured timing/quality, selected
+solver and reasoning, exports/screenshots, unsupported cases, remaining limitations
+and pushed commit hashes. Distinguish training-ready physical validity from an
+attractive visual result. Keep credentials, environments, model downloads and
+ordinary large run artifacts out of Git; commit reproducible non-sensitive evidence.

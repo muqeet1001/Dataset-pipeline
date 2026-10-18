@@ -1,4 +1,11 @@
-ACTIVE EC2 HANDOFF: BROWSER-BASED THREE.JS CLOTHING PIPELINE
+HISTORICAL BROWSER-ONLY HANDOFF - TASK SUPERSEDED
+
+The user now permits EC2 Python/GPU simulation and requires commercial use.
+The active instruction is docs/ec2-gpu-clothing-handoff.txt, supported by the
+comparison in docs/cloth-technology-evaluation.md. Three.js is the viewer.
+The browser-only requirement in the original text below no longer applies.
+
+ORIGINAL HANDOFF: BROWSER-BASED THREE.JS CLOTHING PIPELINE
 
 This is my updated instruction for Dataset-pipeline. For now, put Browzwear /
 VStitcher aside and implement the clothing step inside a Three.js browser app.

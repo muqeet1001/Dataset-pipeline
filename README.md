@@ -5,13 +5,19 @@
 The dataset import, official MHR setup, mesh tests, sample fitting, and resumable
 per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
-**Pipeline Step 2: requested direction — browser-based Three.js clothing simulation.**
+**Pipeline Step 2: recommended direction — EC2 GPU cloth simulation + Three.js viewing.**
 
-The user has put Browzwear/VStitcher aside for now. The active EC2 implementation
-prompt is `docs/ec2-threejs-clothing-handoff.txt`. It defines automatic shirt and
-pants placement, browser cloth physics, tight/medium/loose variants, validation,
-exports and resumable runner integration. This browser backend is **not yet
-implemented or validated**.
+The user confirmed future commercial use and approved Python/GPU simulation on
+EC2. The source review recommends modern Newton/Warp: compare SolverStyle3D and
+SolverVBD on the actual MHR bodies before selecting a solver. See
+`docs/cloth-technology-evaluation.md` for the comparison, published tests,
+dependency restrictions and acceptance cases. The active implementation prompt is
+`docs/ec2-gpu-clothing-handoff.txt`. This backend is **not yet implemented or
+benchmarked**; no MD/VStitcher-equivalent quality or speedup is claimed.
+
+`python scripts/prepare_cloth_benchmark.py` reproduces a plan of 14 subjects and
+60 **not-run** outfit cases per solver in `reports/cloth-benchmark-plan.json`.
+It prepares cases only. The older browser-only handoff is superseded.
 
 The earlier VStitcher integration below is preserved as historical work.
 
@@ -51,7 +57,7 @@ mesh, exact MHR inputs, source measurements, fit report, `checkpoint.json`, and
 Rejected or failed meshes are recorded and withheld from the next stage; processing
 continues with the next record and the command exits with code 2 when any record fails.
 
-Connect the prepared clothing stage with:
+For the **historical VStitcher preparation** (not the proposed GPU backend), use:
 
 ```sh
 python -m pipeline run --clothing-config configs/clothing.example.json --clothing-mode prepare

@@ -1,0 +1,1181 @@
+{
+  "backend_status": "neither integrated or benchmarked on MHR",
+  "backends_to_benchmark": [
+    "newton_style3d",
+    "newton_vbd"
+  ],
+  "bodies": [
+    {
+      "body_status": "existing_example",
+      "selection_reason": "Existing fitted MHR example",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 2,
+      "source_measurements": {
+        "chest_cm": 107.4,
+        "chest_to_hips": 1.097037793667007,
+        "height_cm": 177.6,
+        "hips_cm": 97.9,
+        "waist_cm": 93.3,
+        "waist_to_height": 0.5253378378378378
+      },
+      "stage": "pilot",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "body_status": "existing_example",
+      "selection_reason": "Existing fitted MHR example",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 2,
+      "source_measurements": {
+        "chest_cm": 92.2,
+        "chest_to_hips": 0.9119683481701286,
+        "height_cm": 156.0,
+        "hips_cm": 101.1,
+        "waist_cm": 85.0,
+        "waist_to_height": 0.5448717948717948
+      },
+      "stage": "pilot",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P5 of height_cm",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 1020,
+      "source_measurements": {
+        "chest_cm": 101.5,
+        "chest_to_hips": 1.0431654676258992,
+        "height_cm": 164.8,
+        "hips_cm": 97.3,
+        "waist_cm": 88.9,
+        "waist_to_height": 0.5394417475728155
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_14268"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P95 of height_cm",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 1457,
+      "source_measurements": {
+        "chest_cm": 113.4,
+        "chest_to_hips": 0.9912587412587412,
+        "height_cm": 187.0,
+        "hips_cm": 114.4,
+        "waist_cm": 95.2,
+        "waist_to_height": 0.5090909090909091
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_15177"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P5 of waist_to_height",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 3102,
+      "source_measurements": {
+        "chest_cm": 94.5,
+        "chest_to_hips": 1.0294117647058825,
+        "height_cm": 177.4,
+        "hips_cm": 91.8,
+        "waist_cm": 77.7,
+        "waist_to_height": 0.43799323562570464
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_27390"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P95 of waist_to_height",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 52,
+      "source_measurements": {
+        "chest_cm": 116.6,
+        "chest_to_hips": 0.9380530973451328,
+        "height_cm": 177.9,
+        "hips_cm": 124.3,
+        "waist_cm": 113.9,
+        "waist_to_height": 0.640247329960652
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_10510"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P5 of chest_to_hips",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 378,
+      "source_measurements": {
+        "chest_cm": 92.9,
+        "chest_to_hips": 0.9646936656282451,
+        "height_cm": 172.1,
+        "hips_cm": 96.3,
+        "waist_cm": 81.0,
+        "waist_to_height": 0.4706565950029053
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_11892"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "male: near P95 of chest_to_hips",
+      "sex": "male",
+      "source_file": "ansur2_male.csv",
+      "source_line": 3609,
+      "source_measurements": {
+        "chest_cm": 118.0,
+        "chest_to_hips": 1.1195445920303604,
+        "height_cm": 168.1,
+        "hips_cm": 105.4,
+        "waist_cm": 98.5,
+        "waist_to_height": 0.5859607376561571
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_male_28433"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P5 of height_cm",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 437,
+      "source_measurements": {
+        "chest_cm": 85.2,
+        "chest_to_hips": 0.8640973630831644,
+        "height_cm": 152.5,
+        "hips_cm": 98.6,
+        "waist_cm": 86.5,
+        "waist_to_height": 0.5672131147540984
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_17537"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P95 of height_cm",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 581,
+      "source_measurements": {
+        "chest_cm": 100.4,
+        "chest_to_hips": 1.0131180625630678,
+        "height_cm": 174.0,
+        "hips_cm": 99.1,
+        "waist_cm": 88.0,
+        "waist_to_height": 0.5057471264367817
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_17892"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P5 of waist_to_height",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 1535,
+      "source_measurements": {
+        "chest_cm": 88.7,
+        "chest_to_hips": 0.983370288248337,
+        "height_cm": 163.4,
+        "hips_cm": 90.2,
+        "waist_cm": 72.1,
+        "waist_to_height": 0.4412484700122399
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_27217"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P95 of waist_to_height",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 383,
+      "source_measurements": {
+        "chest_cm": 105.9,
+        "chest_to_hips": 0.8944256756756757,
+        "height_cm": 165.7,
+        "hips_cm": 118.4,
+        "waist_cm": 105.5,
+        "waist_to_height": 0.6366928183464092
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_16715"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P5 of chest_to_hips",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 143,
+      "source_measurements": {
+        "chest_cm": 83.8,
+        "chest_to_hips": 0.8464646464646465,
+        "height_cm": 163.5,
+        "hips_cm": 99.0,
+        "waist_cm": 78.6,
+        "waist_to_height": 0.4807339449541284
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_13530"
+    },
+    {
+      "body_status": "not_generated_for_this_benchmark",
+      "selection_reason": "female: near P95 of chest_to_hips",
+      "sex": "female",
+      "source_file": "ansur2_female.csv",
+      "source_line": 1404,
+      "source_measurements": {
+        "chest_cm": 99.4,
+        "chest_to_hips": 1.022633744855967,
+        "height_cm": 157.2,
+        "hips_cm": 97.2,
+        "waist_cm": 84.0,
+        "waist_to_height": 0.5343511450381679
+      },
+      "stage": "coverage",
+      "subject_id": "ansur2_female_25912"
+    }
+  ],
+  "case_counts_per_backend": {
+    "coverage": 36,
+    "materials": 12,
+    "pilot": 6,
+    "styles": 6,
+    "total": 60
+  },
+  "cases": [
+    {
+      "case_id": "ansur2_male_10027:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_female_10037:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "pilot",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_male_14268:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1886229392,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_14268"
+    },
+    {
+      "case_id": "ansur2_male_14268:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1886229392,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_14268"
+    },
+    {
+      "case_id": "ansur2_male_14268:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1886229392,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_14268"
+    },
+    {
+      "case_id": "ansur2_male_15177:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2057620864,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_15177"
+    },
+    {
+      "case_id": "ansur2_male_15177:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2057620864,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_15177"
+    },
+    {
+      "case_id": "ansur2_male_15177:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2057620864,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_15177"
+    },
+    {
+      "case_id": "ansur2_male_27390:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 666931000,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_27390"
+    },
+    {
+      "case_id": "ansur2_male_27390:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 666931000,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_27390"
+    },
+    {
+      "case_id": "ansur2_male_27390:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 666931000,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_27390"
+    },
+    {
+      "case_id": "ansur2_male_10510:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3244759284,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10510"
+    },
+    {
+      "case_id": "ansur2_male_10510:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3244759284,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10510"
+    },
+    {
+      "case_id": "ansur2_male_10510:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3244759284,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10510"
+    },
+    {
+      "case_id": "ansur2_male_11892:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2790916040,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_11892"
+    },
+    {
+      "case_id": "ansur2_male_11892:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2790916040,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_11892"
+    },
+    {
+      "case_id": "ansur2_male_11892:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2790916040,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_11892"
+    },
+    {
+      "case_id": "ansur2_male_28433:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 160061122,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_28433"
+    },
+    {
+      "case_id": "ansur2_male_28433:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 160061122,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_28433"
+    },
+    {
+      "case_id": "ansur2_male_28433:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 160061122,
+      "sex": "male",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_male_28433"
+    },
+    {
+      "case_id": "ansur2_female_17537:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 687888509,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17537"
+    },
+    {
+      "case_id": "ansur2_female_17537:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 687888509,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17537"
+    },
+    {
+      "case_id": "ansur2_female_17537:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 687888509,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17537"
+    },
+    {
+      "case_id": "ansur2_female_17892:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2199047036,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17892"
+    },
+    {
+      "case_id": "ansur2_female_17892:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2199047036,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17892"
+    },
+    {
+      "case_id": "ansur2_female_17892:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2199047036,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_17892"
+    },
+    {
+      "case_id": "ansur2_female_27217:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3861026866,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_27217"
+    },
+    {
+      "case_id": "ansur2_female_27217:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3861026866,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_27217"
+    },
+    {
+      "case_id": "ansur2_female_27217:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3861026866,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_27217"
+    },
+    {
+      "case_id": "ansur2_female_16715:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 77094462,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_16715"
+    },
+    {
+      "case_id": "ansur2_female_16715:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 77094462,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_16715"
+    },
+    {
+      "case_id": "ansur2_female_16715:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 77094462,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_16715"
+    },
+    {
+      "case_id": "ansur2_female_13530:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2156136297,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_13530"
+    },
+    {
+      "case_id": "ansur2_female_13530:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2156136297,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_13530"
+    },
+    {
+      "case_id": "ansur2_female_13530:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2156136297,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_13530"
+    },
+    {
+      "case_id": "ansur2_female_25912:tight:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3523143404,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_25912"
+    },
+    {
+      "case_id": "ansur2_female_25912:medium:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3523143404,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_25912"
+    },
+    {
+      "case_id": "ansur2_female_25912:loose:basic_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 3523143404,
+      "sex": "female",
+      "stage": "coverage",
+      "status": "not_run",
+      "subject_id": "ansur2_female_25912"
+    },
+    {
+      "case_id": "ansur2_male_10027:tight:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:tight:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:tight:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:medium:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:medium:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:medium:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:loose:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:loose:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_male_10027:loose:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 2071263502,
+      "sex": "male",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_male_10027"
+    },
+    {
+      "case_id": "ansur2_female_10037:tight:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:tight:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:tight:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "tight",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:medium:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:medium:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:medium:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "medium",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:loose:basic_shirt_pants:low_bending",
+      "fabric_profile": "low_bending",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:loose:basic_shirt_pants:high_bending",
+      "fabric_profile": "high_bending",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "basic_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "materials",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    },
+    {
+      "case_id": "ansur2_female_10037:loose:alternate_shirt_pants:baseline",
+      "fabric_profile": "baseline",
+      "fit": "loose",
+      "garments": [
+        "shirt",
+        "pants"
+      ],
+      "outfit_profile": "alternate_shirt_pants",
+      "selection_seed": 1778604098,
+      "sex": "female",
+      "stage": "styles",
+      "status": "not_run",
+      "subject_id": "ansur2_female_10037"
+    }
+  ],
+  "commercial_use_required": true,
+  "failure_tests": [
+    "small_recoverable_initial_overlap",
+    "incorrect_leg_or_layer_order",
+    "unsupported_body_or_impossible_pattern",
+    "missing_units_or_bad_topology",
+    "worker_timeout_or_crash",
+    "missing_or_corrupt_garment_export",
+    "resume_after_partial_fit_completion",
+    "configuration_or_asset_change",
+    "downstream_delivery_failure"
+  ],
+  "profiles_status": "names reserve benchmark slots; assets, dimensions and material values must be resolved before running",
+  "purpose": "Case preparation only; no solver execution or quality pass is claimed",
+  "schema_version": 1,
+  "source_commit": "2f901e81447103dba946b301d844f0fd6476a710",
+  "timing_repetitions": {
+    "cold_run_reported_separately": true,
+    "pilot_warm_runs_per_case": 3
+  },
+  "units": {
+    "ratios": "dimensionless",
+    "simulation": "metres",
+    "source_lengths": "centimetres"
+  }
+}
