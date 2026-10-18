@@ -7,6 +7,12 @@ per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
 **Pipeline Step 2: recommended direction — EC2 GPU cloth simulation + Three.js viewing.**
 
+**Local male-avatar prototype:** `run_clothing.py` now provides Newton VBD cloth
+simulation and a Three.js viewer for the supplied `inputs/MHR-male-10027` body.
+See `docs/local-avatar-clothing.md` for the one-command launch, actual scope,
+CPU-only environment, support constraints and validation status. This is a local
+prototype; it does not complete the full dataset/female/GPU benchmark scope below.
+
 The user confirmed future commercial use and approved Python/GPU simulation on
 EC2. The source review recommends modern Newton/Warp: compare SolverStyle3D and
 SolverVBD on the actual MHR bodies before selecting a solver. See

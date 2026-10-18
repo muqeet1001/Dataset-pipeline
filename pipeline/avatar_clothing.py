@@ -11,6 +11,7 @@ import trimesh
 
 from .garment_draft import draft, PROFILES
 from .cloth_quality import validate
+from .cloth_receipts import job_lock, reusable
 
 ROOT = Path(__file__).resolve().parents[1]
 NEWTON_COMMIT = 'f49482ce07e20764110fd147a67c7334eeae638d'
@@ -106,7 +107,7 @@ def simulate(body, garments, args, progress):
             solver = newton.solvers.SolverStyle3D(model, iterations=args.iterations, linear_iterations=8)
         else:
             solver = newton.solvers.SolverVBD(model, iterations=args.iterations,
-                particle_enable_self_contact=True, particle_self_contact_margin=.006,
+                particle_enable_self_contact=True, particle_self_contact_margin=.0035,
                 particle_self_contact_gap=.003)
         state, target = model.state(), model.state()
         pipeline = newton.CollisionPipeline(model)
@@ -151,18 +152,19 @@ def simulate(body, garments, args, progress):
                 'pinned_vertices': sum(int(g['pinned'].sum()) for g in garments),
                 'fabric': {'density_kg_m2': .25, 'stretch': [3000,3000,1000], 'isotropic_bending':5e-5,
                            'velocity_damping_per_substep':.97, 'body_contact_margin_m':.002,
+                           'self_contact_margin_m':.0035,
                            'body_contact_method':'VBD plus sampled MHR triangle-mesh Jacobi constraints',
                            'status':'assumed prototype preset, not physically calibrated'}}
 
 
-def run(args):
+def _run(args):
     folder = args.input.resolve()
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     body, metadata, body_hash = load_body(folder)
     config = {key: getattr(args,key) for key in ('device','solver','steps','substeps','iterations','face_budget')}
     code = {name:digest(Path(__file__).with_name(name)) for name in
-            ('avatar_clothing.py','garment_draft.py','cloth_quality.py','body_contact.py')}
+            ('avatar_clothing.py','garment_draft.py','cloth_quality.py','body_contact.py','offset_surface.py')}
     key = hashlib.sha256(json.dumps({'body':body_hash,'config':config,'code':code,'profiles':PROFILES},sort_keys=True).encode()).hexdigest()
     manifest = {'subject_id':metadata['subject_id'],'sex':metadata['sex'],'body_height_cm':metadata['height_cm'],
                 'body_sha256':body_hash,'units':'metres','device':args.device,'solver':args.solver,
@@ -170,20 +172,27 @@ def run(args):
                 'versions':{p:importlib.metadata.version(p) for p in ('newton','warp-lang','numpy','trimesh')},
                 'body_scope':metadata['body_fit_scope'],'training_ready':False}
     manifest_path=out/'manifest.json'
+    if manifest_path.exists():
+        try:
+            previous_manifest=json.loads(manifest_path.read_text())
+            if previous_manifest.get('signature')==key:
+                manifest['fits']=previous_manifest.get('fits',{})
+        except (ValueError,OSError):
+            pass
     write_json(manifest_path, manifest)
     failed = False
     for fit in args.fits:
         destination=out/fit
         destination.mkdir(exist_ok=True)
         report_path=destination/'fit-report.json'
-        if report_path.exists() and not args.force:
-            previous=json.loads(report_path.read_text())
-            if previous.get('signature')==key and previous.get('status')=='numerical_pass_unvalidated_fabric' and all(
-                (destination/name).exists() and digest(destination/name)==sha for name,sha in previous['artifacts'].items()):
-                manifest['fits'][fit]={'status':previous['status'],'report':f'{fit}/fit-report.json','scene':f'{fit}/scene.glb'}
-                print(f'{fit}: verified artifacts reused',flush=True)
-                write_json(manifest_path,manifest)
-                continue
+        previous=reusable(report_path,key) if not args.force else None
+        if previous:
+            manifest['fits'][fit]={'status':previous['status'],'report':f'{fit}/fit-report.json',
+                'scene':f'{fit}/scene.glb','rest':f'{fit}/rest.glb','quality':previous['quality'],
+                'total_seconds':previous['total_seconds']}
+            print(f'{fit}: verified artifacts reused',flush=True)
+            write_json(manifest_path,manifest)
+            continue
         started=time.perf_counter()
         print(f'{fit}: drafting outfit on supplied MHR body',flush=True)
         garments=draft(body,fit,args.face_budget)
@@ -198,7 +207,17 @@ def run(args):
             manifest['fits'][fit]['frame']=frame
             manifest['fits'][fit]['p95_movement_mm']=last['p95_movement_m']*1000
             write_json(manifest_path,manifest)
-        simulation=simulate(body,garments,args,progress)
+        try:
+            simulation=simulate(body,garments,args,progress)
+        except Exception as error:
+            failed=True
+            failure={'status':'failed','signature':key,'fit':fit,'error':str(error),'configuration':config}
+            write_json(report_path,failure)
+            manifest['fits'][fit]={'status':'failed','report':f'{fit}/fit-report.json',
+                'scene':f'{fit}/rest.glb','error':str(error)}
+            write_json(manifest_path,manifest)
+            print(f'{fit}: failed: {error}',flush=True)
+            continue
         print(f'{fit}: validating actual simulated cloth',flush=True)
         export_scene(destination/'scene.glb',body,garments)
         for garment in garments:
@@ -229,6 +248,20 @@ def run(args):
     return 2 if failed else 0
 
 
+def run(args):
+    with job_lock(args.output):
+        try:
+            return _run(args)
+        except BaseException as error:
+            path=args.output.resolve()/'manifest.json'
+            if path.exists():
+                manifest=json.loads(path.read_text())
+                manifest['status']='interrupted' if isinstance(error,KeyboardInterrupt) else 'failed'
+                manifest['error']=str(error)
+                write_json(path,manifest)
+            raise
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input',type=Path,default=ROOT/'inputs/MHR-male-10027')
@@ -238,8 +271,8 @@ if __name__=='__main__':
     parser.add_argument('--solver',choices=['style3d','vbd'],default='vbd')
     parser.add_argument('--steps',type=int,default=180)
     parser.add_argument('--substeps',type=int,default=4)
-    parser.add_argument('--iterations',type=int,default=6)
-    parser.add_argument('--face-budget',type=int,default=2000)
+    parser.add_argument('--iterations',type=int,default=8)
+    parser.add_argument('--face-budget',type=int,default=1800)
     parser.add_argument('--force',action='store_true')
     options=parser.parse_args()
     if min(options.steps, options.substeps, options.iterations, options.face_budget)<1:

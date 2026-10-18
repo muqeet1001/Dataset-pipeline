@@ -6,12 +6,14 @@ import json
 import numpy as np
 import pytest
 import trimesh
-import warp as wp
+wp = pytest.importorskip('warp', reason='Install requirements-cloth.txt for the optional cloth tests')
+pytest.importorskip('skimage', reason='Install requirements-cloth.txt for the optional cloth tests')
 
 from pipeline.avatar_clothing import load_body, ROOT
 from pipeline.body_contact import BodyContact
 from pipeline.cloth_quality import edge_crossings
 from pipeline.garment_draft import draft
+from pipeline.cloth_receipts import job_lock, reusable
 
 
 def test_supplied_body_hash_units_and_dimensions():
@@ -39,6 +41,17 @@ def test_drafts_grade_cloth_and_preserve_body():
         for g in garments:
             assert np.isfinite(g['panel_vertices']).all()
             assert np.min(g['rest_edge_lengths']) > 0
+            # Guard the real clipping-sliver regression that opened the shirt.
+            from scipy.sparse import coo_matrix
+            from scipy.sparse.csgraph import connected_components
+            mesh=g['mesh']
+            boundary=mesh.edges_unique[np.bincount(mesh.edges_unique_inverse)==1]
+            graph=coo_matrix((np.ones(len(boundary)*2),
+                (np.r_[boundary[:,0],boundary[:,1]],np.r_[boundary[:,1],boundary[:,0]])),
+                shape=(len(mesh.vertices),)*2)
+            _,labels=connected_components(graph,directed=False)
+            openings=len(np.unique(labels[boundary.ravel()]))
+            assert openings==(4 if g['name']=='shirt' else 3)
             areas[g['name']].append(g['mesh'].area)
             if g['name']=='shirt':
                 assert 0 < g['pinned'].sum() <= 6
@@ -74,3 +87,31 @@ def test_contact_resolves_penetration_without_moving_free_or_pinned_points():
     assert actual[0,0] >= 1.0019
     np.testing.assert_array_equal(actual[1:],points[1:])
     np.testing.assert_array_equal(body.vertices,original)
+
+
+def test_corrupt_and_incomplete_outputs_are_not_reused(tmp_path):
+    import hashlib
+    artifact=tmp_path/'scene.glb'
+    artifact.write_bytes(b'original')
+    report=tmp_path/'fit-report.json'
+    report.write_text(json.dumps({'signature':'same','status':'numerical_pass_unvalidated_fabric',
+        'artifacts':{'scene.glb':hashlib.sha256(b'original').hexdigest()}}))
+    assert reusable(report,'same') is not None
+    assert reusable(report,'changed') is None
+    artifact.write_bytes(b'corrupt')
+    assert reusable(report,'same') is None
+    artifact.unlink()
+    assert reusable(report,'same') is None
+    report.write_text('{partial')
+    assert reusable(report,'same') is None
+
+
+def test_job_lock_is_exclusive_and_released_on_failure(tmp_path):
+    with pytest.raises(ValueError):
+        with job_lock(tmp_path):
+            with pytest.raises(RuntimeError,match='Another clothing job'):
+                with job_lock(tmp_path):
+                    pass
+            raise ValueError('test interruption')
+    with job_lock(tmp_path):
+        pass

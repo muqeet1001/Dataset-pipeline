@@ -6,11 +6,12 @@ Newton solve the free cloth. The source body is never modified.
 """
 import numpy as np
 import trimesh
+from .offset_surface import outer_surface
 
 PROFILES = {
-    'tight': {'shirt_ease_m': .012, 'pants_ease_m': .008},
-    'medium': {'shirt_ease_m': .030, 'pants_ease_m': .023},
-    'loose': {'shirt_ease_m': .055, 'pants_ease_m': .045},
+    'tight': {'shirt_ease_m': .012, 'shirt_hem_layer_room_m': .006, 'pants_ease_m': .008},
+    'medium': {'shirt_ease_m': .030, 'shirt_hem_layer_room_m': 0, 'pants_ease_m': .023},
+    'loose': {'shirt_ease_m': .055, 'shirt_hem_layer_room_m': 0, 'pants_ease_m': .045},
 }
 
 
@@ -28,11 +29,12 @@ def draft(body, fit, face_budget=1600):
     # Normalized landmarks apply only to this verified, upright MHR A-pose.
     # Future avatar poses require an explicit landmark adapter.
     scale = height / 1.776
-    shirt = _cut(body.copy(), [0, 1, 0], [0, 1.00 * scale, 0])
+    shirt = _cut(outer_surface(body,'shirt',PROFILES[fit]['shirt_ease_m'],scale,
+        hem_room=PROFILES[fit]['shirt_hem_layer_room_m']), [0, 1, 0], [0, 1.00 * scale, 0])
     shirt = _cut(shirt, [0, -1, 0], [0, 1.548 * scale, 0])
     for side in (-1, 1):
         shirt = _cut(shirt, [-side, .80, 0], [side * .355 * scale, 1.286 * scale, 0])
-    pants = _cut(body.copy(), [0, 1, 0], [0, .135 * scale, 0])
+    pants = _cut(outer_surface(body,'pants',PROFILES[fit]['pants_ease_m'],scale), [0, 1, 0], [0, .135 * scale, 0])
     pants = _cut(pants, [0, -1, 0], [0, 1.025 * scale, 0])
     garments = []
     for name, shell in [('shirt', shirt), ('pants', pants)]:
@@ -59,20 +61,6 @@ def draft(body, fit, face_budget=1600):
             shell = trimesh.Trimesh(vertices,faces[keep],process=True)
             shell.update_faces(shell.nondegenerate_faces(height=1e-7))
             shell.remove_unreferenced_vertices()
-        # Fit the draft to the actual supplied MHR surface after decimation.
-        nearest, _, faces = body.nearest.on_surface(shell.vertices)
-        normals = body.face_normals[faces]
-        ease = np.full(len(shell.vertices), PROFILES[fit][name + '_ease_m'] * scale)
-        y = nearest[:, 1]
-        if name == 'pants':
-            # Same supported waistband across sizes, with graded hip/thigh/leg.
-            blend = np.clip((1.025 * scale - y) / (.10 * scale), 0, 1)
-            ease = .006 * scale * (1 - blend) + ease * blend
-        else:
-            # A consistent neck opening supports all three shirt sizes.
-            neck = np.clip((y - 1.49 * scale) / (.058 * scale), 0, 1)
-            ease = ease * (1 - neck) + .009 * scale * neck
-        shell.vertices = nearest + normals * ease[:, None]
         if not shell.is_winding_consistent or shell.area_faces.min() < 1e-10:
             raise ValueError(f'{name} draft has invalid triangles')
         # Each triangle has an isometric chart in metres. This preserves its
@@ -102,7 +90,8 @@ def draft(body, fit, face_budget=1600):
                          'panel_indices': np.arange(len(charts)).reshape(-1, 3),
                          'pinned': pinned,
                          'rest_edge_lengths': np.linalg.norm(shell.vertices[edges[:, 0]] - shell.vertices[edges[:, 1]], axis=1),
-                         'draft': {'method': 'body-derived open shell with graded rest metric',
+                         'draft': {'method': 'continuous outer level surface, graded cloth rest metric',
+                                   'draft_voxel_pitch_m':.006*scale,
                                    'profile': PROFILES[fit], 'support_vertices': int(pinned.sum()),
                                    'support_type': 'waistband' if name=='pants' else 'six collar seam supports',
                                    'landmark_scope': 'upright MHR A-pose; proportions calibrated to supplied male avatar',
