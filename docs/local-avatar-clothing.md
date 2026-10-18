@@ -54,8 +54,8 @@ There is one male outfit style; random style diversity and female adaptation hav
 not been implemented in this local prototype.
 
 Both garments share one Newton VBD simulation, with gravity, membrane/bending
-behavior, damping, body contact, self-contact and inter-garment contact. Six
-collar support vertices and a narrow supported waistband stabilize this static
+behavior, damping, body contact, self-contact and inter-garment contact. A narrow
+collar support band and a supported waistband stabilize this static
 pilot. These supports are saved in the reports/NPZs; the rest of the cloth is free.
 The material preset and supports are assumptions requiring calibration.
 

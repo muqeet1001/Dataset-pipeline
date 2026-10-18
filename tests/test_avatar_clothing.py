@@ -54,7 +54,7 @@ def test_drafts_grade_cloth_and_preserve_body():
             assert openings==(4 if g['name']=='shirt' else 3)
             areas[g['name']].append(g['mesh'].area)
             if g['name']=='shirt':
-                assert 0 < g['pinned'].sum() <= 6
+                assert 6 <= g['pinned'].sum() < len(g['mesh'].vertices)*.12
             else:
                 assert 3 <= g['pinned'].sum() < len(g['mesh'].vertices)*.2
     np.testing.assert_array_equal(before,body.vertices)

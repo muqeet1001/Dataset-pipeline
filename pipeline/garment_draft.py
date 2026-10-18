@@ -78,13 +78,11 @@ def draft(body, fit, face_budget=1600):
             if pinned.sum() < 3:
                 raise ValueError('Pants waistband could not be supported')
         else:
-            # Six collar seam supports stabilize placement on this static body.
-            # They are explicitly recorded, not hidden whole-garment skinning.
-            for side in (-1,1):
-                candidates=np.flatnonzero((shell.vertices[:,1]>1.505*scale) &
-                    (shell.vertices[:,0]*side>.015*scale) & (shell.vertices[:,0]*side<.10*scale))
-                chosen=candidates[np.argsort(shell.vertices[candidates,1])[-3:]]
-                pinned[chosen]=True
+            # A narrow collar band models support at the static neck opening.
+            # The explicitly recorded band is a prototype constraint, not skinning.
+            pinned=(shell.vertices[:,1]>1.50*scale) & (np.abs(shell.vertices[:,0])<.10*scale)
+            if pinned.sum()<6 or pinned.sum()>len(shell.vertices)*.12:
+                raise ValueError('Collar support band is outside the expected prototype range')
         edges = shell.edges_unique
         garments.append({'name': name, 'mesh': shell, 'panel_vertices': charts,
                          'panel_indices': np.arange(len(charts)).reshape(-1, 3),
@@ -93,7 +91,7 @@ def draft(body, fit, face_budget=1600):
                          'draft': {'method': 'continuous outer level surface, graded cloth rest metric',
                                    'draft_voxel_pitch_m':.006*scale,
                                    'profile': PROFILES[fit], 'support_vertices': int(pinned.sum()),
-                                   'support_type': 'waistband' if name=='pants' else 'six collar seam supports',
+                                   'support_type': 'waistband' if name=='pants' else 'narrow fixed collar support band',
                                    'landmark_scope': 'upright MHR A-pose; proportions calibrated to supplied male avatar',
                                    'fabric_scope': 'assumed isotropic preset, not calibrated real fabric',
                                    'pattern_scope': 'local triangle charts, not editable tailor sewing patterns'}})
