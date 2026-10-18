@@ -1,0 +1,37 @@
+{
+  "vertices": 18439,
+  "triangles": 36874,
+  "finite": true,
+  "extents_cm": [
+    130.64261627197266,
+    172.68146266788244,
+    39.507307052612305
+  ],
+  "watertight": true,
+  "surface_area_cm2": 18954.93656952012,
+  "status": "passed",
+  "torch_version": "2.10.0+cpu",
+  "device": "cpu",
+  "model_sha256": "352e271a6c42729c68554ceaea0c955e866970160c31e35506d782dc0f7377bc",
+  "identity_input_shape": [
+    1,
+    45
+  ],
+  "pose_input_shape": [
+    1,
+    204
+  ],
+  "expression_input_shape": [
+    1,
+    72
+  ],
+  "skeleton_shape": [
+    1,
+    127,
+    8
+  ],
+  "deterministic": true,
+  "identity_response_max_cm": 3.1918201446533203,
+  "export_round_trip": "passed",
+  "coordinate_system": "MHR native: Y up; centimetres"
+}
