@@ -1,5 +1,10 @@
 # Step 2: VStitcher clothing integration
 
+**Historical integration:** the user has put VStitcher aside for now. Continue
+with the [active Three.js EC2 handoff](ec2-threejs-clothing-handoff.txt), which
+requires the clothing simulation to run inside a browser. The native results
+and prepared implementation below remain a record of earlier work.
+
 Status: **integration prepared; native avatar import confirmed; clothing simulation pending**.
 The initial preparation checkpoint is followed by a successful desktop import pilot
 on 2026-10-18. The EC2 VStitcher desktop was already signed in; no password was

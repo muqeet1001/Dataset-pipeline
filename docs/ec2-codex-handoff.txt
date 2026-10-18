@@ -1,4 +1,11 @@
-CONTINUE DATASET-PIPELINE ON EC2
+HISTORICAL VSTITCHER HANDOFF - TASK SUPERSEDED
+
+The user has put Browzwear/VStitcher aside for now. The active implementation
+instruction is docs/ec2-threejs-clothing-handoff.txt: simulate clothing inside
+a Three.js browser app. Read that file first. The older text below is preserved
+for dataset/MHR setup and native-pilot history, not as the active Step 2 task.
+
+CONTINUE DATASET-PIPELINE ON EC2 (ORIGINAL VSTITCHER INSTRUCTIONS)
 
 You are continuing my existing project. Implement and validate the remaining
 VStitcher clothing automation on this EC2 machine. Do the work, run real pilots,

@@ -1,0 +1,266 @@
+ACTIVE EC2 HANDOFF: BROWSER-BASED THREE.JS CLOTHING PIPELINE
+
+This is my updated instruction for Dataset-pipeline. For now, put Browzwear /
+VStitcher aside and implement the clothing step inside a Three.js browser app.
+This supersedes the VStitcher implementation task in docs/ec2-codex-handoff.txt.
+Preserve that code and its evidence as history; it is not the active dependency.
+
+Implement the complete flow below on my existing EC2 machine. Do the work and
+test real simulations; do not stop after writing a plan or a static preview.
+Commit each meaningful step and push the changes.
+
+1. REPOSITORY AND EXISTING CONTEXT
+
+Private repo: https://github.com/muqeet1001/Dataset-pipeline
+Branch: main. Implementation baseline before the new handoff: 2634362.
+Inspect the existing checkout, git status and applicable AGENTS.md first.
+Preserve unrelated changes and open work. Fetch current main; clone into a
+dedicated directory if absent. Use a codex/ branch if creating a new branch.
+Do not reset or force-push.
+
+Read README.md, docs/step-1-done.md, docs/pipeline-contract.md, this handoff and
+the actual pipeline code. The older docs/ec2-codex-handoff.txt contains useful
+dataset/MHR provenance and setup commands, but its VStitcher task is superseded.
+
+Step 1 already works: original measurements -> official Meta MHR body -> verify
+and save -> per-record checkpoint and downstream handoff. Keep this working.
+
+Dataset: ANSUR II, 6,068 records (4,082 male, 1,986 female), already imported in
+data/raw/ansur2. Source: Twinnie-Inc/TWINNIE, Mahmoud-Dataset-5.8, pinned commit
+2f901e81447103dba946b301d844f0fd6476a710. Raw CSVs are Latin-1; linear values
+are millimetres and weightkg is tenths of a kilogram. The importer converts units.
+
+Official MHR source is in third_party/MHR, commit
+d96fafa33bbf018647c70c3525e91f53e79d2a14. The existing TorchScript backend uses
+assets/mhr_model.pt from release v1.0.1. Assets are ignored by Git. Provenance,
+checksums and the downloader are already present. Reuse verified assets if found.
+
+Real accepted samples:
+  examples/fitted/ansur2_male_10027     height approximately 177.6 cm
+  examples/fitted/ansur2_female_10037   height 156.0 cm
+Each has body.ply, mhr-inputs.npz, source-record.json and fit-report.json.
+Meshes: 18,439 vertices, 36,874 triangles, centimetres, Y up, feet at Y=0.
+Saved skeleton coordinates are labelled unscaled; use the recorded transform
+before relating them to the exported body's coordinates.
+
+Body fitting currently matches stature and chest/waist/hip section-perimeter
+proxies. Other measurements and mass are retained but unfitted. Preserve this
+accuracy statement. Do not claim exact recovery of the person's complete body.
+The full 6,068-body batch has not been generated.
+
+The last reported project unit-test result was 27 passing tests. Old native
+clothing API tests used a synthetic double. A real male OBJ imported into the
+EC2 VStitcher GUI, but no real MHR clothing simulation was validated there.
+There is no implemented Three.js clothing physics pipeline yet.
+
+2. THE COMPLETE REQUIRED FLOW
+
+One program invocation must perform, per dataset record:
+  read measurements and source metadata
+  -> generate or resume the verified MHR body
+  -> load that body into a browser simulation worker
+  -> select a shirt and pants from the matching male/female catalog
+  -> position the outfit on the body
+  -> simulate tight, medium and loose variants
+  -> validate and export the three results and metadata
+  -> persist a durable handoff for the next stage
+  -> move to the next record.
+
+Use the same shirt style, pants style and fabric definitions across the three
+variants for that subject. Choose styles with a recorded seed; persist the
+selection so a resume does not randomly change the outfit.
+
+For each record the input can be just the generated avatar and its existing
+metadata. Clothing assets, fit profiles, placement rules and fabric settings are
+prepared once and stored with the application. There must be no per-record file
+upload, manual garment placement, terminal command or button clicking.
+
+Also provide an interactive local preview where I can load a supported avatar,
+see the outfit, switch tight/medium/loose, simulate/reset and download results.
+For a standalone avatar, request explicit units/sex metadata when unknown or use
+an explicitly unisex template; do not infer sex from body appearance. The dataset
+batch already supplies its recorded sex through source-record.json.
+
+3. TECHNOLOGY AND SCOPE
+
+All clothing simulation must execute inside the browser runtime, with Three.js
+for the 3D scene. A JavaScript/WebAssembly cloth solver or custom browser solver
+is acceptable. WebGPU may accelerate it when actually supported. Inspect browser
+and hardware capabilities; provide a working CPU/browser alternative or a clear
+unsupported-runtime failure rather than silently disabling physics.
+
+Do not require VStitcher, CLO or Blender for the per-subject clothing simulation.
+Ordinary one-time asset conversion is fine. Keep the run local on existing EC2.
+Use maintained, suitable dependencies where available, pin their versions and
+record third-party code/asset provenance and licenses. A general rigid-body engine
+wrapper alone is not a complete garment solver.
+
+Do not implement video generation, animation sequences, Unreal, model training,
+deployment services, or other later pipeline stages. Diagnostic screenshots are
+part of validation, not a new synthetic-video stage.
+
+4. CLOTHING ASSETS AND PLACEMENT
+
+Start with a simple short-sleeve shirt and long pants. Obtain suitable reusable
+assets, or implement clearly identified procedural sewing/pattern templates if
+available assets cannot be adapted. Real sources to inspect:
+  https://static.makehumancommunity.org/assets/assetpacks/shirts01.html
+  https://static.makehumancommunity.org/assets/assetpacks/pants01.html
+Those particular packs list CC0 assets; preserve the individual provenance.
+MakeHuman's automatic clothing mappings refer to its own basemesh, so adapting
+them to MHR requires a fitting/mapping step. Do not assume they fit MHR directly.
+
+Keep garment templates, rest dimensions, seams, openings, fabric properties and
+placement landmarks explicit. A generic GLB's appearance materials do not supply
+all the cloth simulation parameters we need. Do not invent measured fabric data;
+label chosen presets as assumptions until calibrated.
+
+Enrol male and female garment/outfit pools. Keep this browser catalog separate
+from the old native VStitcher size-ID schema. Do not fabricate native size IDs
+for browser templates. If only one eligible style is available in a pool, report
+that limited diversity honestly.
+
+Keep the MHR body immutable. Locate neck, shoulders, armpits, waist, hips, crotch
+and limbs from suitable transformed MHR data and/or validated mesh landmarks.
+Align shirt neck/sleeves and pants waistband/legs. Start from a sensible pose
+with low initial penetration, correct orientation and open garment openings.
+Handle the waistband/support with documented seam/elastic/constraint behavior.
+Avoid pinning whole garments to the skin just to conceal placement failures.
+
+5. REAL BROWSER PHYSICS
+
+Implement or integrate a cloth-capable solver, for example a position-based
+constraint approach with a fixed timestep and bounded substeps/iterations.
+Required behavior includes gravity, mass/damping, stretch/shear/bending behavior,
+body collisions, cloth self-collision and interactions between shirt and pants.
+Use suitable collision thickness and friction. A wavy shader, baked animation,
+vertex offset or pure shrinkwrap is not the requested cloth simulation.
+
+Use explicit units: source MHR PLY is in centimetres. If simulating in metres,
+convert through a recorded transform and validate the inverse/roundtrip. Record
+export units, especially for GLB. Do not change the underlying body's dimensions.
+
+Body collision must meaningfully represent the MHR surface. Approximate colliders
+may help a coarse stage, but final validation must check against the actual body.
+Use acceleration structures as needed. Do not hide body regions or move the body
+to conceal garment intersections. Do not promise collision-free simulation merely
+because collision settings are enabled.
+
+Run until a documented settling criterion is met or a bounded work/time limit is
+reached. Record the criterion, timestep, iterations/substeps, convergence metrics
+and errors. Unsettled, unstable or invalid results must fail or remain pending.
+Use bounded retries with recorded changes; preserve the original failed attempt.
+
+Useful starting points, not complete avatar dressing implementations:
+  https://threejs.org/examples/webgpu_compute_cloth.html
+  https://github.com/mrdoob/three.js/blob/dev/examples/webgpu_compute_cloth.html
+  https://threejs.org/examples/physics_ammo_cloth.html
+  https://github.com/mrdoob/three.js/blob/dev/examples/physics_ammo_cloth.html
+
+6. TIGHT, MEDIUM AND LOOSE
+
+Create three garment rest-size/pattern variants around the SAME body. Change
+documented garment dimensions/ease, rather than scaling the body, changing only
+collision clearance, or changing fabric stiffness to manufacture fit labels.
+Use meaningful grading across torso, sleeves, waistband, hips and legs. If using
+parametric patterns, save their parameters and measured rest dimensions.
+
+The old prototype bands (tight 0-6%, medium 6-14%, loose 14-30% primary-circumference
+ease) are only initial operational targets. They are not universal physical-fit
+criteria and do not validate pants/other dimensions. Choose and document suitable
+profiles; calibrate on actual results. Do not introduce negative ease without
+appropriate stretch behavior and validation.
+
+The labels initially mean intended fit. Save checks for the observed fit, strain,
+clearance, penetration and convergence separately. An attractive render or three
+different garment sizes does not by itself prove physically correct fitting.
+
+7. PIPELINE INTEGRATION, OUTPUTS AND RESUME
+
+Read pipeline/__main__.py, pipeline/runner.py and docs/pipeline-contract.md.
+Reuse the verified body handoff and next-stage consumer design. Add an explicit
+Three.js backend or clean consumer integration, with a simple documented launcher.
+Preserve existing Step 1 behavior and keep unused native integration isolated.
+
+The Python orchestrator may manage a local server and a long-lived automated
+browser worker. The actual clothing solver still runs in the browser. Avoid
+opening a new interactive window for every person. Use structured jobs/results,
+preflight checks, timeouts, logs and controlled worker cleanup. No external upload
+of avatars is needed. Inspect the available browser automation tools first.
+
+For each subject preserve the original body and emit:
+  selected outfit/catalog entries and source hashes
+  placement/rest-geometry/template parameters
+  tight/: scene.glb, shirt.glb, pants.glb, fit/simulation report
+  medium/: the same artifacts
+  loose/: the same artifacts
+  overall clothing manifest, checksums, status and next-stage handoff.
+Adapt names only if documented clearly. scene.glb must contain the original body
+plus both garments; shirt.glb and pants.glb must contain their respective garments.
+
+Record subject ID/sex, body hash, seed, asset IDs/hashes/license provenance,
+template/rest-size parameters, fabric assumptions, solver/browser/dependency
+versions, unit transforms, attempt settings, results and validation limitations.
+Use atomic receipts. Config/asset/code changes must invalidate affected clothing
+results without regenerating a valid MHR body unnecessarily.
+
+Verify completed variants on resume. Missing/corrupt results retry only the needed
+clothing work. Failed or pending jobs must not be counted as downstream delivery.
+Process sequentially, recording failures and a useful exit code; keep successful
+records reusable. Preserve the existing output locking/idempotency design.
+
+8. BUILD AND TEST IN COMMITTED MILESTONES
+
+First inspect the repo/host and demonstrate an actual browser-simulated shirt on
+the existing male example. Then add pants and their interaction, the three fit
+variants, the female example, exports and full runner integration. Finish the
+whole scope; a first prototype is a milestone rather than task completion.
+
+Use existing fitted examples to develop clothing before downloading MHR again.
+When needed, use the existing requirements, asset verifier/downloader and commands
+from README. Python 3.11+ is required by the existing project (3.12 was tested).
+Do not unnecessarily replace the host's existing installations.
+
+Test real browser execution on BOTH existing subjects and ALL THREE variants:
+six outfit simulations total, each with a shirt and pants. Capture actual UI
+screenshots and save exported meshes and reports. AI-generated concept images,
+synthetic API doubles and screenshots of an unrelated demo are not pilot evidence.
+
+Checks must cover finite valid meshes, stable settling, unchanged body dimensions,
+units, correctly positioned garment openings, collision/penetration against the
+actual body, self/inter-garment intersections and excessive strain. Use meaningful
+geometric checks, including intersections that vertex-only distances can miss,
+and inspect the appearance. Define and record tolerances and remaining limitations.
+Separate numerical validity from human-reviewed physical-fit accuracy.
+
+Run the combined pipeline twice and show resume skips verified work. Test one
+missing clothing artifact and one failure path; show that the accepted MHR body
+is reused and downstream status remains correct. Add meaningful unit/integration
+tests for the changes and keep existing tests passing. Record software/hardware
+capabilities and distinguish unit tests from actual browser solver tests.
+
+Provide working commands for interactive preview, clothing on an existing avatar,
+a combined two-subject pilot and a full dataset run. The combined pilot can select
+both IDs explicitly using the existing runner's --subject-id options. --limit 2
+does not guarantee one male and one female. New backend flags are implementation
+work; do not present invented commands as already supported.
+
+Do not automatically launch all 6,068 subjects while debugging. Finish and report
+the verified pilot and ready batch command first. Document the catalog's actual
+body-size coverage; unsupported subjects must be flagged rather than forced into
+an invalid garment.
+
+9. FINAL DELIVERABLE
+
+Update README and handoff docs to make this Three.js path the active direction.
+Report exactly what works, real male/female pilot evidence, validation metrics and
+limits, output paths, the one-command run instructions and pushed commit hashes.
+Do not claim the dataset is training-ready without the relevant fit validation.
+Keep credentials, virtual environments, dependencies, ordinary runs and large model
+assets out of Git. Commit source, appropriate asset provenance and reproducible
+non-sensitive evidence. Preserve prior work.
+
+Proceed autonomously with routine implementation choices. If an external issue
+blocks you, investigate first, finish independent work and ask for the exact
+missing dependency. Do not stop to request permission for already-authorized
+coding, testing, commits or routine reversible setup.

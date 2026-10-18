@@ -5,7 +5,15 @@
 The dataset import, official MHR setup, mesh tests, sample fitting, and resumable
 per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
-**Pipeline Step 2: PREPARED — native MHR avatar import confirmed.**
+**Pipeline Step 2: requested direction — browser-based Three.js clothing simulation.**
+
+The user has put Browzwear/VStitcher aside for now. The active EC2 implementation
+prompt is `docs/ec2-threejs-clothing-handoff.txt`. It defines automatic shirt and
+pants placement, browser cloth physics, tight/medium/loose variants, validation,
+exports and resumable runner integration. This browser backend is **not yet
+implemented or validated**.
+
+The earlier VStitcher integration below is preserved as historical work.
 
 The clothing stage selects sex-matched random garments and three graded fit
 conditions: **tight, medium, loose**. It exports an unchanged OBJ avatar and
