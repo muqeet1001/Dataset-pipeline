@@ -1,5 +1,10 @@
 # Dataset-pipeline
 
+**Pipeline Step 1: DONE — automated dataset-to-MHR mesh generation.**
+
+The dataset import, official MHR setup, mesh tests, sample fitting, and resumable
+per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
+
 ## Automated run
 
 After the one-time environment and MHR asset setup below, run:
@@ -40,7 +45,7 @@ python -m pipeline run --next-stage my_next_stage:process
 The consumer receives a handoff dictionary with the subject ID, artifact paths,
 checksums, units, and a stable idempotency key. See `docs/pipeline-contract.md`.
 
-## Step 1: Import Mahmoud dataset
+## Dataset import
 
 The original ANSUR II measurement dataset has been imported from
 `Twinnie-Inc/TWINNIE`, branch `Mahmoud-Dataset-5.8`, commit
@@ -68,13 +73,13 @@ The CSVs use Latin-1 encoding. Linear measurements are in millimetres;
 `weightkg` is in tenths of a kilogram. The original source documentation
 explains the dataset provenance and Army population scope.
 
-## Step 2: Official MHR source
+## Official MHR source
 
 The full official Meta MHR source is in `third_party/MHR`, pinned at commit
 `d96fafa33bbf018647c70c3525e91f53e79d2a14`. Its license and original files are
 preserved. See `THIRD_PARTY.md`.
 
-## Step 3: Test MHR mesh generation
+## MHR mesh generation test
 
 From this repository root, create a Python 3.11+ environment and install dependencies:
 
@@ -100,7 +105,7 @@ with Y as the vertical axis.
 Downloaded model assets and ordinary runs stay outside Git. Each completed step
 is committed separately.
 
-## Step 4: Dataset record to MHR mesh
+## Dataset record to MHR mesh
 
 ```sh
 python -m pipeline normalize
