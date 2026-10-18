@@ -52,7 +52,9 @@ def _shirt(profile):
     # A short-sleeve tee with a real front scoop; shoulders carry its weight.
     hem=.885 if profile['chest_ease_m']>.2 else .90
     grade=(profile['chest_ease_m']-.025)/6
-    right=np.array([[w,hem],[w,1.305],[.365+grade,1.235],[.43+grade,1.325],
+    cuff_half=(.17+grade*1.5)/2/np.sqrt(2)
+    right=np.array([[w,hem],[w,1.305],[.38+grade-cuff_half,1.29-cuff_half],
+                    [.38+grade+cuff_half,1.29+cuff_half],
                     [.260+grade,1.520],[.079,1.548]])
     # Closed boundaries: sides, underarms and shoulders. Open: hem, cuffs, neck.
     neck_front=np.array([[.060,1.512],[.032,1.493],[0,1.487],[-.032,1.493],[-.060,1.512]])
@@ -93,13 +95,24 @@ def _arrange(uv, segments, name, side, profile):
     # does not set the rest metric and is never used to alter final exports.
     xy=uv.copy()
     if name=='shirt':
-        xy[:,0]*=.84
+        # Equal-arc ellipse placement avoids the infinite derivative of the
+        # former square-root pillow placement at the sewn side boundaries.
+        w=(.993+profile['chest_ease_m'])/4
+        theta=np.linspace(-np.pi/2,np.pi/2,1001)
+        speed=np.sqrt((1.2*np.cos(theta))**2+np.sin(theta)**2)
+        arc=np.r_[0,np.cumsum((speed[1:]+speed[:-1])/2*np.diff(theta))]
+        radius=2*w/arc[-1]
+        angle=np.interp(np.clip((uv[:,0]+w)/(2*w),0,1),arc/arc[-1],theta)
+        xy[:,0]=np.where(np.abs(uv[:,0])<=w,1.2*radius*np.sin(angle),
+            np.sign(uv[:,0])*(1.2*radius+np.abs(uv[:,0])-w))
         closed=[LineString([a,b]) for a,b,tag in segments if not tag.startswith('open')]
         d=np.array([min(s.distance(Point(p)) for s in closed) for p in uv])
-        depth=np.where(np.abs(uv[:,0])>.25,.085,.180 if side==1 else .145)
-        lower=np.clip((1.12-uv[:,1])/.12,0,1)
-        depth=depth*(1-lower)+(.22 if side==1 else .21)*lower
-        z=side*depth*np.sqrt(np.clip(d/.075,0,1))+.015
+        sleeve=np.clip((np.abs(uv[:,0])-(w-.025))/.075,0,1)
+        half_cuff=(.17+(profile['chest_ease_m']-.025)/4)/2
+        depth=radius*(1-sleeve)+(2*half_cuff/np.pi)*sleeve
+        breadth=w*(1-sleeve)+half_cuff*sleeve
+        center=np.interp(uv[:,1],[.9,1.035,1.2,1.35,1.55],[.015,.013,.037,.01,-.005])
+        z=side*depth*np.sin(np.clip(d/breadth,0,1)*np.pi/2)+center
     else:
         y=uv[:,1]
         shift=np.interp(y,[.13,.47,.745,.89,1.035],[.015,.007,-.016,0,0])
@@ -112,7 +125,7 @@ def _arrange(uv, segments, name, side, profile):
              (.523+profile['hip_ease_m']*.5)/4,(1.007+profile['hip_ease_m'])/4,.24])
         zcenter=np.interp(y,[.13,.47,.745,.89,1.035],[-.067,-.055,0,.015,.015])
         t=np.clip(d/halfwidth,0,1)
-        z=zcenter+side*depth*np.sqrt(t*(2-t))
+        z=zcenter+side*depth*np.sin(t*np.pi/2)
     return np.column_stack([xy,z])
 
 

@@ -1,12 +1,19 @@
 ACTIVE EC2 HANDOFF: GPU CLOTH SIMULATION + THREE.JS VIEWING
 
-LOCAL IMPLEMENTATION UPDATE (19 October 2026): a working static male prototype
-now exists. Read docs/local-avatar-clothing.md, reports/local-avatar-pilot.json
-and pipeline/avatar_clothing.py before the original task below. It uses Newton
-VBD plus sampled body contact, a supported collar/waistband and Three.js viewing.
-Three male fits passed numerical checks locally on CPU. GPU execution, female
-garments, fabric calibration and the formal solver/coverage benchmark remain
-unvalidated. Continue from this code; do not rebuild the prototype from scratch.
+LOCAL IMPLEMENTATION UPDATE (19 October 2026): read the latest
+pipeline/avatar_clothing.py, pipeline/sewing_patterns.py and
+docs/local-avatar-clothing.md first. The original body-derived shells passed
+numerical checks but failed the user's visual realism review. The active
+revision uses original flat sewn tee/trouser patterns, flat membrane rest metrics
+and zero bending rest angles. The shirt has no pinned collar. Only the trouser
+waistband edge is supported. Crotch clearance is measured from the actual MHR
+mesh. Conservative body-contact corrections are limited against cloth layers.
+The viewer can replay actual recorded solver states from drape.f32/drape.json.
+Do not mistake passing component tests or archived shell examples for proof that
+the sewn garment fit is accepted. Inspect current per-fit receipts and the latest
+reports before continuing. GPU execution, calibrated fabric, female garments and
+the formal solver/coverage benchmark remain unvalidated. Continue this code and
+keep failed attempts visible; do not rebuild from scratch or hide clipping.
 
 Continue Dataset-pipeline on my existing EC2 machine. I have confirmed that the
 dataset is for a commercial product or future commercial model training. Python

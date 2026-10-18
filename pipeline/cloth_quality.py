@@ -35,7 +35,10 @@ def validate(body, garments, settled, history):
             result['garments'][garment['name']] = {'finite': False}
             continue
         points = np.vstack([mesh.vertices, mesh.triangles_center])
-        signed = trimesh.proximity.signed_distance(body, points)
+        # Bound the proximity query's temporary candidate arrays on 8 GB hosts.
+        # This is the same independent test, with unchanged geometry/tolerances.
+        signed = np.concatenate([trimesh.proximity.signed_distance(body, points[i:i+256])
+                                 for i in range(0,len(points),256)])
         edges = mesh.edges_unique
         actual_lengths = np.linalg.norm(mesh.vertices[edges[:, 0]] - mesh.vertices[edges[:, 1]], axis=1)
         strain = actual_lengths / garment['rest_edge_lengths'] - 1

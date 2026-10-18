@@ -51,6 +51,16 @@
     "note": "30-frame smoke was not expected to pass settling; geometry failed independently"
   },
   "correction": "Crotch clearance measured from the real mesh; body correction swept samples limited against all cloth before applying positions",
-  "current_full_run": "sewn-v5; result pending at this commit",
+  "current_full_run": "sewn-v5 medium completed; tight interrupted; loose not run",
+  "sewn_v5_medium": {
+    "status": "needs_review",
+    "settled": false,
+    "body_crossing_edges": 8,
+    "self_crossing_edges": 9,
+    "inter_garment_crossing_edges": 0,
+    "shirt_edge_strain_p95_abs": 0.1903256,
+    "pants_edge_strain_p95_abs": 0.1894193,
+    "note": "Current cuff/placement edits postdate this run and require a new simulation. Passing the eight component regressions does not validate the saved garment."
+  },
   "real_fabric_calibrated": false
 }
