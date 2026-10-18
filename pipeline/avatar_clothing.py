@@ -1,0 +1,247 @@
+"""Run the supplied MHR avatar through real Newton cloth and export three fits."""
+import argparse
+import hashlib
+import importlib.metadata
+import json
+from pathlib import Path
+import time
+
+import numpy as np
+import trimesh
+
+from .garment_draft import draft, PROFILES
+from .cloth_quality import validate
+
+ROOT = Path(__file__).resolve().parents[1]
+NEWTON_COMMIT = 'f49482ce07e20764110fd147a67c7334eeae638d'
+
+
+def digest(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def write_json(path, data):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_suffix(path.suffix + '.tmp')
+    temp.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n', encoding='utf-8', newline='\n')
+    temp.replace(path)
+
+
+def load_body(folder):
+    metadata = json.loads((folder / 'metadata.json').read_text())
+    if metadata.get('obj_units') != 'centimetres' or metadata.get('vertical_axis') != 'Y':
+        raise ValueError('This adapter requires explicit centimetre OBJ units and Y-up metadata')
+    if metadata.get('sex') != 'male':
+        raise ValueError('The initial template has only been adapted to the supplied male MHR A-pose')
+    path = folder / 'avatar.obj'
+    actual = digest(path)
+    expected = metadata.get('sha256', {}).get('avatar.obj')
+    if expected is not None and actual != expected:
+        raise ValueError('Avatar OBJ checksum does not match metadata')
+    body = trimesh.load(path, force='mesh', process=False)
+    body.apply_scale(.01)
+    if not body.is_watertight or not np.isfinite(body.vertices).all():
+        raise ValueError('Avatar must be finite and watertight')
+    if abs(body.extents[1] * 100 - metadata['height_cm']) > .01:
+        raise ValueError('Avatar height does not match metadata')
+    return body, metadata, actual
+
+
+def export_scene(path, body, garments):
+    scene = trimesh.Scene()
+    for name, mesh, color in [('body', body, [191, 168, 147, 255])] + [
+        (g['name'], g['mesh'], [46, 115, 172, 255] if g['name'] == 'shirt' else [49, 57, 72, 255])
+        for g in garments]:
+        mesh = mesh.copy()
+        mesh.visual = trimesh.visual.TextureVisuals(material=trimesh.visual.material.PBRMaterial(
+            name=name, baseColorFactor=color, roughnessFactor=.85, metallicFactor=0, doubleSided=True))
+        scene.add_geometry(mesh, node_name=name, geom_name=name)
+    path.write_bytes(scene.export(file_type='glb', include_normals=True))
+
+
+def simulate(body, garments, args, progress):
+    import newton
+    import warp as wp
+    from .body_contact import BodyContact
+    started = time.perf_counter()
+    with wp.ScopedDevice(args.device):
+        builder = newton.ModelBuilder(up_axis=newton.Axis.Y)
+        builder.default_edge_ke = 5e-5
+        if args.solver == 'style3d':
+            newton.solvers.SolverStyle3D.register_custom_attributes(builder)
+        ranges = []
+        for garment in garments:
+            mesh = garment['mesh']
+            start = builder.particle_count
+            if args.solver == 'style3d':
+                newton.solvers.style3d.add_cloth_mesh(
+                    builder, pos=wp.vec3(0, 0, 0), rot=wp.quat_identity(), vel=wp.vec3(0, 0, 0),
+                    vertices=mesh.vertices.tolist(), indices=mesh.faces.flatten().tolist(), density=.25,
+                    panel_verts=garment['panel_vertices'].tolist(),
+                    panel_indices=garment['panel_indices'].flatten().tolist(),
+                    tri_aniso_ke=wp.vec3(3000, 3000, 1000), edge_aniso_ke=None,
+                    tri_kd=.002, edge_kd=.001, particle_radius=.002, label=garment['name'])
+            else:
+                builder.add_cloth_mesh(pos=wp.vec3(0,0,0), rot=wp.quat_identity(), scale=1,
+                    vel=wp.vec3(0,0,0), vertices=mesh.vertices.tolist(), indices=mesh.faces.flatten().tolist(),
+                    density=.25, tri_ke=3000, tri_ka=1000, tri_kd=.002, edge_ke=5e-5, edge_kd=.001,
+                    particle_radius=.002)
+            stop = builder.particle_count
+            ranges.append((start, stop))
+            for index in np.flatnonzero(garment['pinned']):
+                builder.particle_mass[start + int(index)] = 0.0
+                builder.particle_flags[start + int(index)] &= ~int(newton.ParticleFlags.ACTIVE)
+        builder.add_shape_mesh(body=-1, mesh=newton.Mesh(body.vertices.astype(np.float32), body.faces.flatten().astype(np.int32)),
+                               xform=wp.transform_identity())
+        if args.solver == 'vbd':
+            builder.color()
+        model = builder.finalize(device=args.device)
+        print(f'  cloth: {model.particle_count} vertices, {model.tri_count} triangles; min mass {min(x for x in builder.particle_mass if x > 0):.3g} kg', flush=True)
+        model.set_gravity((0, -9.81, 0))
+        model.soft_contact_ke = 3e3
+        model.soft_contact_kd = 2.0
+        model.soft_contact_mu = .4
+        if args.solver == 'style3d':
+            solver = newton.solvers.SolverStyle3D(model, iterations=args.iterations, linear_iterations=8)
+        else:
+            solver = newton.solvers.SolverVBD(model, iterations=args.iterations,
+                particle_enable_self_contact=True, particle_self_contact_margin=.006,
+                particle_self_contact_gap=.003)
+        state, target = model.state(), model.state()
+        pipeline = newton.CollisionPipeline(model)
+        contacts = pipeline.contacts()
+        control = model.control()
+        body_contact = BodyContact(body, garments, model) if args.solver == 'vbd' else None
+        setup_seconds = time.perf_counter() - started
+        last = state.particle_q.numpy().copy()
+        initial = last.copy()
+        history = []
+        settled = False
+        solve_started = time.perf_counter()
+        for frame in range(args.steps):
+            for _ in range(args.substeps):
+                state.clear_forces()
+                pipeline.collide(state, contacts)
+                solver.step(state, target, control, contacts, 1 / 60 / args.substeps)
+                if body_contact is not None:
+                    body_contact.solve(target)
+                state, target = target, state
+            points = state.particle_q.numpy().copy()
+            velocities = state.particle_qd.numpy()
+            if not np.isfinite(points).all() or np.max(np.abs(points)) > 10:
+                raise RuntimeError(f'Cloth diverged at frame {frame}: bounds {np.nanmin(points,axis=0)} / {np.nanmax(points,axis=0)}')
+            movement = np.linalg.norm(points - last, axis=1)
+            history.append({'frame': frame + 1, 'p95_movement_m': float(np.percentile(movement,95)),
+                            'max_movement_m': float(movement.max()),
+                            'p95_speed_m_s': float(np.percentile(np.linalg.norm(velocities,axis=1),95))})
+            last = points
+            if (frame+1) % 15 == 0:
+                print(f"  frame {frame+1}/{args.steps}: p95 movement {history[-1]['p95_movement_m']*1000:.2f} mm", flush=True)
+                progress(frame+1, history[-1])
+            if frame >= 89 and all(h['p95_movement_m'] < .0005 and h['max_movement_m'] < .003
+                                   and h['p95_speed_m_s'] < .03 for h in history[-30:]):
+                settled = True
+                break
+        for garment, (start, stop) in zip(garments, ranges):
+            garment['mesh'].vertices = points[start:stop]
+        return {'setup_seconds': setup_seconds, 'simulation_seconds': time.perf_counter()-solve_started,
+                'steps_completed': frame+1, 'settled': settled, 'history': history,
+                'max_actual_simulation_displacement_m': float(np.linalg.norm(points-initial,axis=1).max()),
+                'pinned_vertices': sum(int(g['pinned'].sum()) for g in garments),
+                'fabric': {'density_kg_m2': .25, 'stretch': [3000,3000,1000], 'isotropic_bending':5e-5,
+                           'velocity_damping_per_substep':.97, 'body_contact_margin_m':.002,
+                           'body_contact_method':'VBD plus sampled MHR triangle-mesh Jacobi constraints',
+                           'status':'assumed prototype preset, not physically calibrated'}}
+
+
+def run(args):
+    folder = args.input.resolve()
+    out = args.output.resolve()
+    out.mkdir(parents=True, exist_ok=True)
+    body, metadata, body_hash = load_body(folder)
+    config = {key: getattr(args,key) for key in ('device','solver','steps','substeps','iterations','face_budget')}
+    code = {name:digest(Path(__file__).with_name(name)) for name in
+            ('avatar_clothing.py','garment_draft.py','cloth_quality.py','body_contact.py')}
+    key = hashlib.sha256(json.dumps({'body':body_hash,'config':config,'code':code,'profiles':PROFILES},sort_keys=True).encode()).hexdigest()
+    manifest = {'subject_id':metadata['subject_id'],'sex':metadata['sex'],'body_height_cm':metadata['height_cm'],
+                'body_sha256':body_hash,'units':'metres','device':args.device,'solver':args.solver,
+                'newton_commit':NEWTON_COMMIT,'signature':key,'fits':{},'status':'running',
+                'versions':{p:importlib.metadata.version(p) for p in ('newton','warp-lang','numpy','trimesh')},
+                'body_scope':metadata['body_fit_scope'],'training_ready':False}
+    manifest_path=out/'manifest.json'
+    write_json(manifest_path, manifest)
+    failed = False
+    for fit in args.fits:
+        destination=out/fit
+        destination.mkdir(exist_ok=True)
+        report_path=destination/'fit-report.json'
+        if report_path.exists() and not args.force:
+            previous=json.loads(report_path.read_text())
+            if previous.get('signature')==key and previous.get('status')=='numerical_pass_unvalidated_fabric' and all(
+                (destination/name).exists() and digest(destination/name)==sha for name,sha in previous['artifacts'].items()):
+                manifest['fits'][fit]={'status':previous['status'],'report':f'{fit}/fit-report.json','scene':f'{fit}/scene.glb'}
+                print(f'{fit}: verified artifacts reused',flush=True)
+                write_json(manifest_path,manifest)
+                continue
+        started=time.perf_counter()
+        print(f'{fit}: drafting outfit on supplied MHR body',flush=True)
+        garments=draft(body,fit,args.face_budget)
+        for garment in garments:
+            np.savez_compressed(destination/(garment['name']+'-rest.npz'),vertices=garment['mesh'].vertices,
+                faces=garment['mesh'].faces, panel_vertices=garment['panel_vertices'],panel_indices=garment['panel_indices'],
+                pinned=garment['pinned'])
+        export_scene(destination/'rest.glb',body,garments)
+        manifest['fits'][fit]={'status':'simulating','scene':f'{fit}/rest.glb','report':f'{fit}/fit-report.json'}
+        write_json(manifest_path,manifest)
+        def progress(frame, last):
+            manifest['fits'][fit]['frame']=frame
+            manifest['fits'][fit]['p95_movement_mm']=last['p95_movement_m']*1000
+            write_json(manifest_path,manifest)
+        simulation=simulate(body,garments,args,progress)
+        print(f'{fit}: validating actual simulated cloth',flush=True)
+        export_scene(destination/'scene.glb',body,garments)
+        for garment in garments:
+            garment['mesh'].export(destination/(garment['name']+'.glb'))
+            garment['mesh'].export(destination/(garment['name']+'.obj'))
+        reloaded=trimesh.load(destination/'scene.glb',force='scene',process=False)
+        exported_body=reloaded.geometry['body']
+        body_error=float(np.max(np.abs(exported_body.vertices-body.vertices)))
+        if body_error > 1e-7 or not np.array_equal(exported_body.faces,body.faces):
+            raise RuntimeError('Export changed original body geometry')
+        quality=validate(body,garments,simulation['settled'],simulation['history'])
+        status='numerical_pass_unvalidated_fabric' if quality['numerical_pass'] else 'needs_review'
+        failed |= not quality['numerical_pass']
+        report={'fit':fit,'status':status,'signature':key,'configuration':config,'input_body_sha256':body_hash,
+                'body_roundtrip_max_error_m':body_error,'body_faces_unchanged':True,
+                'drafts':{g['name']:g['draft'] for g in garments},'simulation':simulation,
+                'quality':quality,'total_seconds':time.perf_counter()-started,
+                'artifacts':{p.name:digest(p) for p in destination.iterdir() if p.suffix in ('.glb','.npz','.obj')}}
+        write_json(report_path,report)
+        manifest['fits'][fit]={'status':status,'scene':f'{fit}/scene.glb','rest':f'{fit}/rest.glb',
+                              'report':f'{fit}/fit-report.json','total_seconds':report['total_seconds'],
+                              'quality':{k:v for k,v in quality.items() if k not in ('settling_history',)}}
+        write_json(manifest_path,manifest)
+        print(f'{fit}: {status}; {report["total_seconds"]:.1f}s',flush=True)
+    manifest['status']='needs_review' if failed else 'prototype_complete'
+    write_json(manifest_path,manifest)
+    print(f'Viewer data: {manifest_path}',flush=True)
+    return 2 if failed else 0
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--input',type=Path,default=ROOT/'inputs/MHR-male-10027')
+    parser.add_argument('--output',type=Path,default=ROOT/'runs/local-avatar/MHR-male-10027')
+    parser.add_argument('--fits',nargs='+',choices=list(PROFILES),default=list(PROFILES))
+    parser.add_argument('--device',default='cpu')
+    parser.add_argument('--solver',choices=['style3d','vbd'],default='vbd')
+    parser.add_argument('--steps',type=int,default=180)
+    parser.add_argument('--substeps',type=int,default=4)
+    parser.add_argument('--iterations',type=int,default=6)
+    parser.add_argument('--face-budget',type=int,default=2000)
+    parser.add_argument('--force',action='store_true')
+    options=parser.parse_args()
+    if min(options.steps, options.substeps, options.iterations, options.face_budget)<1:
+        parser.error('Steps, substeps, iterations and face budget must be positive')
+    raise SystemExit(run(options))

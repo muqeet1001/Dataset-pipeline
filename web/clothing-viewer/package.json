@@ -1,0 +1,7 @@
+{
+  "name": "dataset-cloth-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {"three": "0.186.1"}
+}
