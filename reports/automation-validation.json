@@ -1,0 +1,61 @@
+{
+  "pipeline_tests": {
+    "passed": 15,
+    "failed": 0
+  },
+  "first_real_MHR_run": {
+    "records_selected": 2,
+    "generated": 2,
+    "resumed": 0,
+    "ready_for_next_stage": 2,
+    "delivered": 0,
+    "rejected": 0,
+    "failed": 0,
+    "results": [
+      {
+        "subject_id": "ansur2_male_10027",
+        "status": "ready_for_next_stage"
+      },
+      {
+        "subject_id": "ansur2_female_10037",
+        "status": "ready_for_next_stage"
+      }
+    ]
+  },
+  "resumed_real_MHR_run": {
+    "records_selected": 2,
+    "generated": 0,
+    "resumed": 2,
+    "ready_for_next_stage": 2,
+    "delivered": 0,
+    "rejected": 0,
+    "failed": 0,
+    "results": [
+      {
+        "subject_id": "ansur2_male_10027",
+        "status": "ready_for_next_stage"
+      },
+      {
+        "subject_id": "ansur2_female_10037",
+        "status": "ready_for_next_stage"
+      }
+    ]
+  },
+  "artifacts_unchanged_on_resume": true,
+  "handoff_checksums": {
+    "ansur2_female_10037": {
+      "body.ply": "c209cf3c8b44e17d1e4460f43cb128596be9d887c0f53cddade7ebc5ae9a3311",
+      "mhr-inputs.npz": "8481cf0b2302deec10c77b4577740281afadc6f10b42db9a23de3d1cdd04b5e4",
+      "source-record.json": "94fe310ecd37d3be2513e13fa3cbd02a7bb09c78f8420f4b3d88868c3dcc98cb",
+      "fit-report.json": "74a64bdb7f26c53137283ba0152ac046d7daa45819f5e4a1b9164b5d6cb98562"
+    },
+    "ansur2_male_10027": {
+      "body.ply": "9e7183a68264c88d7f23e443b381b24d0d473d0c746c3abdeedb0dfb39e1b3cf",
+      "mhr-inputs.npz": "2b2b0d51d5c249c14378af091483534b54bbd709fb21fa854a4d4550e1e7a990",
+      "source-record.json": "bdef8e5d651cf15fa8e4dae6872e574fccf2bd58f5acb309c51934bc7b0581c6",
+      "fit-report.json": "9410668bca6a75337edab879c9c41157b449b719353d73ad7517957afc3b2c0e"
+    }
+  },
+  "next_stage_delivery": "Callable handoff tested with a simulated consumer; a production next stage has not been defined.",
+  "scope": "Two real records tested. The complete 6068-record mesh batch has not been run."
+}

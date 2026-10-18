@@ -24,6 +24,16 @@ def main():
     command = commands.add_parser('verify')
     command.add_argument('--model', type=Path, default=Path('assets/mhr_model.pt'))
     command.add_argument('--directory', type=Path, default=Path('examples/fitted'))
+    command = commands.add_parser('run', help='Process dataset records sequentially and resume completed records')
+    command.add_argument('--model', type=Path, default=Path('assets/mhr_model.pt'))
+    command.add_argument('--data', type=Path, default=Path('data/raw/ansur2'))
+    command.add_argument('--output', type=Path, default=Path('runs/pipeline'))
+    selection = command.add_mutually_exclusive_group()
+    selection.add_argument('--subject-id', action='append')
+    selection.add_argument('--limit', type=int, help='Process only the first N records for a trial run')
+    command.add_argument('--max-error-cm', type=float, default=2.0)
+    command.add_argument('--max-evaluations', type=int, default=150)
+    command.add_argument('--next-stage', metavar='MODULE:FUNCTION', help='Call this local Python function for every verified mesh')
     args = parser.parse_args()
     if args.command == 'normalize':
         from .dataset import normalize
@@ -35,6 +45,59 @@ def main():
         from .mhr import load_model
         from .verify import verify_generated
         print(json.dumps(verify_generated(load_model(args.model), args.directory), indent=2))
+    elif args.command == 'run':
+        import hashlib
+        import importlib
+        import importlib.metadata
+        import math
+        from .dataset import load_subjects
+        from .fit import BodyFitter
+        from .mhr import load_model
+        from .runner import run_pipeline
+        from .verify import verify_subject
+        if not math.isfinite(args.max_error_cm) or args.max_error_cm <= 0 or args.max_evaluations < 1:
+            parser.error('Error tolerance and maximum evaluations must be positive and finite')
+        if args.limit is not None and args.limit < 1:
+            parser.error('--limit must be positive')
+        subjects = load_subjects(args.data)
+        if args.subject_id:
+            requested = set(args.subject_id)
+            subjects = [subject for subject in subjects if subject['subject_id'] in requested]
+            missing = requested - {subject['subject_id'] for subject in subjects}
+            if missing:
+                parser.error(f'Unknown subject IDs: {sorted(missing)}')
+        elif args.limit:
+            subjects = subjects[:args.limit]
+        next_stage = None
+        if args.next_stage:
+            module_name, separator, function_name = args.next_stage.partition(':')
+            if not separator or not module_name or not function_name or ':' in function_name:
+                parser.error('--next-stage must be MODULE:FUNCTION')
+            try:
+                next_stage = getattr(importlib.import_module(module_name), function_name)
+            except (ImportError, AttributeError) as error:
+                parser.error(f'Cannot load next stage: {error}')
+            if not callable(next_stage):
+                parser.error('--next-stage must name a callable function')
+        model = load_model(args.model)
+        fitter = BodyFitter(model, args.max_error_cm)
+        source_root = Path(__file__).parent
+        provenance = json.loads((source_root.parent / 'third_party/mhr-provenance.json').read_text(encoding='utf-8'))
+        config = {
+            'model_sha256': provenance['model_sha256'],
+            'max_error_cm': args.max_error_cm, 'max_evaluations': args.max_evaluations,
+            'code_sha256': {name: hashlib.sha256((source_root / name).read_bytes()).hexdigest() for name in ('dataset.py', 'fit.py', 'sections.py', 'mhr.py', 'verify.py')},
+            'dependencies': {name: importlib.metadata.version(name) for name in ('torch', 'numpy', 'scipy', 'trimesh')},
+        }
+        report = run_pipeline(
+            subjects, args.output,
+            lambda subject, directory: fitter.fit(subject, directory, args.max_evaluations),
+            lambda directory: verify_subject(model, directory),
+            fitting_config=config, next_stage=next_stage, next_stage_id=args.next_stage,
+        )
+        print(json.dumps({key: value for key, value in report.items() if key != 'results'}, indent=2))
+        if report['rejected'] or report['failed']:
+            raise SystemExit(2)
     else:
         from .dataset import load_subjects
         from .fit import BodyFitter

@@ -1,5 +1,45 @@
 # Dataset-pipeline
 
+## Automated run
+
+After the one-time environment and MHR asset setup below, run:
+
+```sh
+python -m pipeline run
+```
+
+The program reads the dataset in order. For each record it generates a mesh,
+checks the fit, reproduces the exported mesh from its saved MHR inputs, and writes
+the verified result as a handoff for the next stage. It finishes that record before
+starting the next. The model is loaded once for the run.
+
+Run the same command again to resume. Verified completed meshes are checked and
+reused. Missing or modified artifacts are regenerated, and failed records are
+retried. An interrupted run keeps its completed record checkpoints.
+
+For a small trial:
+
+```sh
+python -m pipeline run --limit 2
+```
+
+Outputs are under `runs/pipeline/subjects/<subject_id>/`. Each record includes the
+mesh, exact MHR inputs, source measurements, fit report, `checkpoint.json`, and
+`handoff.json`. `progress.json`, `events.jsonl`, and `run-report.json` track the run.
+Rejected or failed meshes are recorded and withheld from the next stage; processing
+continues with the next record and the command exits with code 2 when any record fails.
+
+The next pipeline stage has not been defined yet. Currently, validated meshes wait
+in their handoff files with status `ready_for_next_stage`. When that stage is built,
+connect its Python function and every accepted mesh will be passed to it immediately:
+
+```sh
+python -m pipeline run --next-stage my_next_stage:process
+```
+
+The consumer receives a handoff dictionary with the subject ID, artifact paths,
+checksums, units, and a stable idempotency key. See `docs/pipeline-contract.md`.
+
 ## Step 1: Import Mahmoud dataset
 
 The original ANSUR II measurement dataset has been imported from
