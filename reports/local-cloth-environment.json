@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-18",
+  "host": "Windows local computer, Coding volume B:",
+  "gpu": "Intel Iris Xe",
+  "nvidia_cuda_driver_available": false,
+  "newton": "1.8.0.dev0",
+  "newton_commit": "f49482ce07e20764110fd147a67c7334eeae638d",
+  "warp": "1.18.0",
+  "verified_devices": ["cpu"],
+  "style3d_import_verified": true,
+  "simulation_status": "not yet run",
+  "note": "CPU prototype timings must not be presented as EC2 GPU benchmarks"
+}

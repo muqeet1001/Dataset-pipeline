@@ -1,0 +1,7 @@
+newton @ https://github.com/newton-physics/newton/archive/f49482ce07e20764110fd147a67c7334eeae638d.zip
+warp-lang==1.18.0
+numpy==2.5.4
+scipy==1.18.1
+trimesh==4.12.2
+fast-simplification==0.2.0
+rtree==1.4.1

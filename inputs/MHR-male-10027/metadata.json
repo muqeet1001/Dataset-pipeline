@@ -1,0 +1,18 @@
+{
+  "subject_id": "ansur2_male_10027",
+  "sex": "male",
+  "height_cm": 177.6,
+  "obj_units": "centimetres",
+  "glb_units": "metres",
+  "vertical_axis": "Y",
+  "feet_y": 0,
+  "vertices": 18439,
+  "triangles": 36874,
+  "contains": "MHR body only; no clothing",
+  "geometry_scope": "Original verified OBJ copied unchanged; GLB uses only cm-to-m conversion and float32 serialization",
+  "body_fit_scope": "Height and three circumference proxies; other dimensions are not exact",
+  "sha256": {
+    "avatar.obj": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+    "avatar.glb": "6fed0d3cc5e9306e15f737e58dfc64bdc8728bf50acb1a7566f620548b0a9ade"
+  }
+}

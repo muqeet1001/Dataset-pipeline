@@ -10,3 +10,5 @@ build/
 dist/
 *.local.json
 garments/
+node_modules/
+work/

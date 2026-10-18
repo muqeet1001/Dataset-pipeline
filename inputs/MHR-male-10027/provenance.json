@@ -1,0 +1,13 @@
+{
+  "source": "User-provided Downloads/MHR-male-10027 folder, copied without alteration",
+  "copied_on": "2026-10-18",
+  "subject_id": "ansur2_male_10027",
+  "sex": "male",
+  "obj_units": "centimetres",
+  "glb_units": "metres",
+  "sha256": {
+    "avatar.obj": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+    "avatar.glb": "6fed0d3cc5e9306e15f737e58dfc64bdc8728bf50acb1a7566f620548b0a9ade"
+  },
+  "body_scope": "Existing fitted MHR body, not exact recovery of all original ANSUR measurements"
+}
