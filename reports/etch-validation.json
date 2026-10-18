@@ -1,0 +1,244 @@
+{
+  "date_local": "2026-10-19",
+  "implementation_commit": "d2127bc05b365dcb594c35e9d91d87e7c41df5be",
+  "status": "experimental independent MHR adaptation; trained body reconstruction not achieved",
+  "production_ready": false,
+  "official_paper_accuracy_reproduced": false,
+  "architecture_is_official_etch": false,
+  "restricted_etch_weights_or_dataset_examples_used": false,
+  "environment": {
+    "platform": "Windows, local CPU",
+    "cuda_available": false,
+    "torch": "2.10.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "trimesh": "4.12.2",
+    "potpourri3d": "1.4.0",
+    "ec2_gpu_executed": false
+  },
+  "automated_tests": {
+    "command": ".venv/Scripts/python.exe -m pytest -q",
+    "passed": 44,
+    "failed": 0,
+    "seconds": 19.55,
+    "etch_tests": 8,
+    "coverage": [
+      "Hidden body under a closed garment is excluded from observed inputs",
+      "Direction equivariance and scalar invariance for all 60 discrete group rotations and translation",
+      "Finite gradients for four supervised losses and undefined skin-direction masking",
+      "Stable top-three confidence^20 voting and missing-marker rejection",
+      "Subject ID/body-hash connected grouping across outfits, posed frames and renamed duplicates",
+      "Development data and corrupt pair archives rejected",
+      "Observed point-cloud prediction and removal of stale body-fit artifacts",
+      "Neutral identity/similarity fitter on synthetic known-marker targets"
+    ],
+    "arbitrary_so3_or_articulated_generalization_tested": false
+  },
+  "data_checks": {
+    "development_pair_1024": {
+      "adapter": "mhr-tightness-v1",
+      "anchor_matching": "released-code Euclidean nearest anchor within 0.01 m; paper describes geodesic nearest",
+      "anchor_transferred_points": 179,
+      "body_topology_sha256": "570f2210f8784780c8116e623bacbfb7e83cebe3be4bb3a6f6934f83eb6a65c6",
+      "candidate_points_tested": 2048,
+      "contains_released_etch_weights": false,
+      "development_only": true,
+      "fit": "reference-regular",
+      "magnitude_p95_m": 0.03956826720348476,
+      "marker_definition_sha256": "4fc6c31bcb1df93014fe724a9d847dffc82bde7046584db950c741a39fa1e376",
+      "marker_distance": "heat-method geodesic on native MHR surface, barycentric interpolation",
+      "marker_scope": "86 native MHR surface markers; not SMPL marker IDs",
+      "normal_anchors": 1488,
+      "npz_sha256": "0b8c1a493f14552fc2da46a6ad220dcacb8ce100ffcb55f265cc7ef9b79f9328",
+      "observation_scope": "uniform visible surface samples from 26 external viewpoints; not RGB video reconstruction",
+      "points": 1024,
+      "scene_sha256": "2ab7523b1ca29492371e0b9fa7b7657a6d894c40a13f1ce352fbf2b3abc37f6f",
+      "seed": 1,
+      "source_body_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+      "source_cloth_configuration": {
+        "contact_every": 4,
+        "device": "cpu",
+        "face_budget": 1800,
+        "iterations": 12,
+        "solver": "vbd",
+        "steps": 150,
+        "substeps": 4
+      },
+      "source_cloth_status": "needs_review",
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "upstream_commit_reviewed": "dc743bcd01e8616987de09ed8f222eff64f0f55c",
+      "vector_convention": "inner_body_minus_outer_clothing; inner = outer + vector",
+      "visible_marker_labels": 86
+    },
+    "development_pair_5000": {
+      "adapter": "mhr-tightness-v1",
+      "anchor_matching": "released-code Euclidean nearest anchor within 0.01 m; paper describes geodesic nearest",
+      "anchor_transferred_points": 2077,
+      "body_topology_sha256": "570f2210f8784780c8116e623bacbfb7e83cebe3be4bb3a6f6934f83eb6a65c6",
+      "candidate_points_tested": 10000,
+      "contains_released_etch_weights": false,
+      "development_only": true,
+      "fit": "reference-regular",
+      "magnitude_p95_m": 0.0409228184864228,
+      "marker_definition_sha256": "4fc6c31bcb1df93014fe724a9d847dffc82bde7046584db950c741a39fa1e376",
+      "marker_distance": "heat-method geodesic on native MHR surface, barycentric interpolation",
+      "marker_scope": "86 native MHR surface markers; not SMPL marker IDs",
+      "normal_anchors": 4515,
+      "npz_sha256": "2b5040dd4e6ecae1d8d7410b4cd1017aeaa3cdfd3ca1228b10d5a53d26c6f088",
+      "observation_scope": "uniform visible surface samples from 26 external viewpoints; not RGB video reconstruction",
+      "points": 5000,
+      "scene_sha256": "2ab7523b1ca29492371e0b9fa7b7657a6d894c40a13f1ce352fbf2b3abc37f6f",
+      "seed": 1,
+      "source_body_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+      "source_cloth_configuration": {
+        "contact_every": 4,
+        "device": "cpu",
+        "face_budget": 1800,
+        "iterations": 12,
+        "solver": "vbd",
+        "steps": 150,
+        "substeps": 4
+      },
+      "source_cloth_status": "needs_review",
+      "subject_id": "ansur2_male_10027",
+      "synthetic_body_fit_scope": "Height and three circumference proxies; other dimensions are not exact",
+      "training_ready": false,
+      "upstream_commit_reviewed": "dc743bcd01e8616987de09ed8f222eff64f0f55c",
+      "vector_convention": "inner_body_minus_outer_clothing; inner = outer + vector",
+      "visible_marker_labels": 86
+    },
+    "normal_training_gate": {
+      "exit_code": 2,
+      "rejected_development_data": true,
+      "checkpoint_created": false
+    }
+  },
+  "network_training_smoke": {
+    "initialized_from": "random; no pretrained ETCH/ArtEq/CAPE/4D-Dress weights",
+    "configuration": {
+      "markers": 86,
+      "neighbours_count": 12,
+      "radius": 0.4,
+      "width": 16
+    },
+    "steps": 80,
+    "points_per_step": 128,
+    "seed": 7,
+    "device": "cpu",
+    "training_subject_ids": [
+      "ansur2_male_10027"
+    ],
+    "validation_subject_ids": [],
+    "training_pairs": [
+      {
+        "file": "runs\\etch\\pairs\\reference-regular.npz",
+        "npz_sha256": "0b8c1a493f14552fc2da46a6ad220dcacb8ce100ffcb55f265cc7ef9b79f9328"
+      }
+    ],
+    "marker_definition_sha256": "4fc6c31bcb1df93014fe724a9d847dffc82bde7046584db950c741a39fa1e376",
+    "model_source_sha256": "82fcdcab43b55378b10c909ab86eae76c58f5024b9813617b907c27ab334c072",
+    "checkpoint_sha256": "7b7534fde3d218a32967d87d7b89eb07fa2bd390e43e1b66a1b40cdf874b0a24",
+    "validation_mean_multitask_loss": null,
+    "body_fitting_accuracy_evaluated": false,
+    "seconds": 9.040999999997439,
+    "first_loss": {
+      "confidence": 0.02514597959816456,
+      "direction": 0.8842937350273132,
+      "labels": 4.495378017425537,
+      "magnitude": 0.49919939041137695,
+      "step": 1,
+      "total": 5.904016971588135
+    },
+    "last_loss": {
+      "confidence": 0.020825933665037155,
+      "direction": 0.3674602508544922,
+      "labels": 4.432607173919678,
+      "magnitude": 0.38147515058517456,
+      "step": 80,
+      "total": 5.202368259429932
+    },
+    "accuracy_claim": "None: one-body engineering smoke, no held-out body accuracy"
+  },
+  "neural_prediction_512": {
+    "adapter": "mhr-tightness-v1",
+    "body_fit_error": "Only 1 marker labels were predicted; at least 24 are required",
+    "body_fit_status": "failed",
+    "candidate_points_tested": 1024,
+    "checkpoint_sha256": "7b7534fde3d218a32967d87d7b89eb07fa2bd390e43e1b66a1b40cdf874b0a24",
+    "development_only": true,
+    "input_scan": "B:\\Dataset-pipeline\\runs\\reference-look\\MHR-male-10027\\reference-regular\\scene.glb",
+    "observation_scope": "externally visible samples from input triangle surface",
+    "points": 512,
+    "source": "actual native-network predictions; no body mesh used in prediction",
+    "training_ready": false,
+    "valid_markers": 1
+  },
+  "neural_prediction_5000": {
+    "adapter": "mhr-tightness-v1",
+    "body_fit_error": "Only 1 marker labels were predicted; at least 24 are required",
+    "body_fit_status": "failed",
+    "candidate_points_tested": 10000,
+    "checkpoint_sha256": "7b7534fde3d218a32967d87d7b89eb07fa2bd390e43e1b66a1b40cdf874b0a24",
+    "development_only": true,
+    "input_scan": "B:\\Dataset-pipeline\\runs\\reference-look\\MHR-male-10027\\reference-regular\\scene.glb",
+    "observation_scope": "externally visible samples from input triangle surface",
+    "points": 5000,
+    "source": "actual native-network predictions; no body mesh used in prediction",
+    "training_ready": false,
+    "valid_markers": 1
+  },
+  "neural_prediction_expected_exit_code": 2,
+  "neural_predicted_body_obj_created": false,
+  "oracle_fitter_check": {
+    "source": "GROUND-TRUTH MARKER ORACLE; NOT NEURAL INFERENCE",
+    "neural_accuracy_evaluated": false,
+    "status": "neutral_marker_fit_passed",
+    "valid_markers": 86,
+    "marker_rmse_m": 1.3612747869657843e-07,
+    "all_vertex_rmse_m": 9.225252774229668e-08,
+    "all_vertex_max_error_m": 5.964191109983737e-07,
+    "official_affine_error_m": 1.0198705624020477e-06,
+    "height_m": 1.7759999955424401,
+    "scope": "first 20 identity coefficients and global rigid similarity at fixed MHR neutral pose",
+    "articulated_pose_recovery": false
+  },
+  "viewer": {
+    "url": "http://127.0.0.1:9086/web/clothing-viewer/etch.html",
+    "module_node_syntax_check": "passed",
+    "targets_visible": {
+      "points": 5000,
+      "known_marker_labels": 86
+    },
+    "network_smoke_visible": {
+      "points": 512,
+      "predicted_marker_labels": 1
+    },
+    "known_reference_body_hidden_by_default_in_network_mode": true,
+    "interpolation_slider_checked_at": [
+      0,
+      1
+    ],
+    "ground_truth_not_presented_as_neural_reconstruction": true
+  },
+  "remaining_work": [
+    "Resolve current garment collision/self-intersection/settling failures",
+    "Generate diverse accepted clothing/body pairs and held-out subjects",
+    "Implement and validate articulated MHR pose recovery",
+    "Train and benchmark on EC2 GPU; measure held-out reconstruction errors and failures",
+    "Evaluate real scans, garment-size generalization and metric capture scale",
+    "Compare this independent backbone to the released ETCH architecture"
+  ],
+  "code_sha256": {
+    "pipeline/etch/__init__.py": "382abb2cd7acc55f22496e9f13c7a74fe0b3a7d4bf18a209c8f94afe6eb1d855",
+    "pipeline/etch/__main__.py": "ba798b264a16a743750b7597578cbd3b90cd9bfa5a32a8ad6283937bdc2d4c49",
+    "pipeline/etch/body_fit.py": "b0a88beee2d0853d81ae28bfc6c3601de30eba4721ce04e889ba8c8d0ec9ea6d",
+    "pipeline/etch/geometry.py": "7b397b60342bc71fe305219513a79a5429b53014d54069066d5caef9b6248559",
+    "pipeline/etch/model.py": "82fcdcab43b55378b10c909ab86eae76c58f5024b9813617b907c27ab334c072",
+    "pipeline/etch/prepare.py": "7fd336af07090b0146608cc97be28f29e991745289ab81a2e9d40cb0ed5d900d",
+    "pipeline/etch/runtime.py": "21f5d8e33d39c886a920adb6cf3a1d2238855b4d7996dea213d9df1cfeade4b2",
+    "run_etch.py": "c5d372e95a7024b9669b8d0910ce41211e44ee76bc059e90d002f23fb55e9e83",
+    "tests/test_etch.py": "d7d82bbe24b64e4e49e1bfd7fa48ba8f9d7025b88eec19359c8bb5f6fb371c5f",
+    "configs/mhr-markers-86.json": "4fc6c31bcb1df93014fe724a9d847dffc82bde7046584db950c741a39fa1e376"
+  }
+}

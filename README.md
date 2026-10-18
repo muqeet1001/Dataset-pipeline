@@ -23,6 +23,16 @@ fit cases and opens `web/clothing-viewer/reference.html`. See
 `docs/reference-clothing-target.txt` for the scope and acceptance criteria.
 Reference matching, calibrated fabric and moving-arm cloth are not yet validated.
 
+**ETCH method adaptation:** `run_etch.py` prepares visible cloth/body target pairs,
+trains a fresh MHR-native tightness network, votes for 86 body markers and fits
+the official MHR model at its neutral pose with a global similarity transform.
+It is an independently implemented adaptation, with a different encoder from
+the released EPN/SMPL system. No noncommercial ETCH weights are used. See
+`docs/etch-integration.txt` for the reviewed paper, commands, differences and
+actual validation scope. The current failed clothing sample remains development-only;
+normal training refuses it. Articulated recovery and unseen-subject accuracy
+are not validated.
+
 The earlier body-shell prototype passed numerical checks but failed visual review.
 Its archived comparison is shown below; it is not a claim of realistic fabric fit.
 

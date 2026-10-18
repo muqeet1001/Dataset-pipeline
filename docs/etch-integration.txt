@@ -1,0 +1,178 @@
+ETCH METHOD REVIEW AND MHR ADAPTATION
+19 October 2026
+
+Reviewed sources
+  Project: https://boqian-li.github.io/ETCH/
+  Paper, arXiv v3, all 15 pages:
+    https://arxiv.org/pdf/2503.10624v3
+  ICCV paper, all 11 pages:
+    https://boqian-li.github.io/ETCH/ETCH.pdf
+  Official source, pinned for this review:
+    https://github.com/boqian-li/ETCH/tree/dc743bcd01e8616987de09ed8f222eff64f0f55c
+  Traced preprocessing, dataset, network, training, inference, fitting and
+  animation entry points. Local review copies are under ignored work/.
+
+What ETCH does
+  It reconstructs a body underneath an existing clothed 3D surface. A network
+  predicts tightness direction/magnitude plus marker labels/confidence. Body
+  points are voted into sparse markers, then a parametric body is fitted to
+  those markers. The published body model is SMPL. This is the inverse task
+  to generating/simulating garments. Its animation script transfers skinning
+  weights to an existing scan; it is not a physical cloth solver.
+
+Where it belongs in this project
+  Forward dataset generation:
+    dataset measurements -> MHR body -> physically simulated garments
+    -> visible clothed 3D observations + hidden ground-truth body.
+  Learning and reconstruction:
+    paired observations/body -> tightness targets -> train a network
+    -> predict hidden body points -> vote for markers -> fit a body model.
+  ETCH helps the second flow. It cannot replace the garment simulator or turn
+  the supplied clothing-reference video into simulated fabric by itself.
+
+How the paper and released project work
+  1. Sample an existing clothed surface. Build body/clothing correspondences
+     for training using body-normal rays and a backwards-intersection check.
+     Rays with an ambiguous return to the body are discarded.
+  2. EPN features retain an orientation dimension over 60 rotations. This lets
+     the direction branch change its output direction as the scan rotates.
+     A two-layer attention head weights rotation matrices; an SVD projection
+     returns a proper rotation, applied to the canonical z direction.
+  3. Pool over the orientation dimension for invariant features. Separate
+     PointTransformer branches estimate distance and marker label/confidence.
+     Distance and identity should not change when the person rotates.
+  4. Train direction, magnitude, label and confidence together. The released
+     training code uses 1-cosine, magnitude MSE (target distance x10), label
+     cross-entropy and confidence MSE. Our inward sign convention is explicit.
+  5. Move observed points towards the estimated body. For each of 86 marker
+     labels, keep the three highest-confidence points and use confidence^20
+     weighted voting. Fit the parametric body to these sparse estimates.
+     The released SMPL fitter optimizes shape, pose and translation in stages.
+  Tightness vectors provide directional information beneath loose garments;
+  merely shrinking clothing by a scalar does not identify the hidden body.
+  Missing surfaces, very loose/complex clothing, thin body parts and synthetic
+  training-to-real-scan differences remain evaluation concerns. A rotating
+  rendered avatar is also different from a person changing articulated pose.
+
+Our implementation is explicitly an MHR-native adaptation
+  Input: metric 3D clothed surface or point observations.
+  Data: externally visible surface samples and paired hidden MHR body targets.
+  Native labels: 86 fixed MHR vertex IDs chosen once by geodesic coverage.
+  Targets: inward vectors, magnitude, marker identity and geodesic confidence.
+  Network: independently implemented compact PyTorch G60 group-point encoder,
+    separate direction/invariant heads, point attention, SO(3) projection and
+    the four supervised tasks. It is NOT the released EPN/PointTransformer and
+    cannot load the authors' checkpoints. No published accuracy is claimed.
+  Voting: top three points per marker, confidence exponent 20, stable log weights.
+  Fitting: official MHR, first 20 identity coefficients plus global rotation,
+    scale and translation, at the fixed native neutral pose. Articulated pose
+    optimization is unfinished. It is not the paper's SMPL/Theseus fitter.
+
+Implementation details which prevent invalid results
+  A GLB containing full body + shirt + trousers is not itself an outer scan.
+  Points covered by clothes are removed using line-of-sight tests against all
+  scene surfaces from 26 external cameras. Hidden bare-body input would leak
+  the training answer. The body is used separately as supervision only.
+
+  Our vector convention is body minus cloth, so inner = outer + vector. The
+  released code uses the opposite convention and subtracts its vectors.
+  The direction loss follows the released training code's 1 - cosine and
+  masks zero-distance skin points, whose direction is undefined.
+
+  Confidence uses heat-method body-surface distances and exp(-10 * distance).
+  The paper describes geodesic nearest-anchor transfer; its released dataset
+  code uses a Euclidean KD-tree with a 1 cm threshold. Our adapter matches the
+  released nearest-anchor rule, with normal-ray/backward-hit validation.
+  Native MHR face interpolation replaces the SMPL subdivision/index scheme.
+
+  All sizes/frames with the same subject ID or ground-truth body hash stay in
+  one train/validation group, including poses with different vertex hashes.
+  One-body development training has no independent validation score.
+  Invalid clothing stays development-only. Normal training rejects those pairs.
+  Checkpoints and data have SHA-256 receipts; NPZ loads disallow pickle and
+  checkpoint loading uses Torch weights_only mode.
+
+Licensing choice
+  Official ETCH source: MIT. Official ETCH pretrained models: noncommercial.
+  The implementation here is fresh code trained from random initialization on
+  our own generated pairs. It uses no released ETCH, ArtEq, CAPE or 4D-Dress
+  neural weights or dataset examples. MHR's existing pinned asset provenance
+  remains in third_party/mhr-provenance.json. No SMPL asset is required.
+  Source code and pretrained/data licenses must not be conflated.
+
+Setup
+  python -m pip install -r requirements-etch.txt
+  The official MHR asset is assets/mhr_model.pt, with its existing SHA check.
+  python run_etch.py doctor
+
+Create a pair from an accepted clothing export
+  python run_etch.py prepare --fit-folder PATH_TO_FIT --output runs/etch/pairs/CASE.npz
+  This uses configs/mhr-markers-86.json; reuse it for every body of this topology.
+  Do not reselect markers independently for every person.
+
+Development target check on the current failed clothing prototype
+  python run_etch.py prepare --fit-folder runs/reference-look/MHR-male-10027/reference-regular --output runs/etch/pairs/reference-regular.npz --points 1024 --anchors 2000 --development
+  Full 5000-point target check shown in the inspector:
+  python run_etch.py prepare --fit-folder runs/reference-look/MHR-male-10027/reference-regular --output runs/etch/full-target-check/reference-regular.npz --points 5000 --anchors 6000 --development
+  This is explicitly not a production training sample.
+
+Train from scratch after valid pairs and held-out bodies exist
+  python run_etch.py train --pairs runs/etch/pairs --output runs/etch/checkpoints/native.pt --device cuda --steps 10000
+  Points default to 5000; CPU is also supported. The number of steps here is a
+  run configuration, not an assertion that 10000 steps are sufficient.
+
+Predict from a metric clothed surface and fit neutral-pose MHR
+  python run_etch.py predict --scan INPUT.glb --checkpoint runs/etch/checkpoints/native.pt --output runs/etch/prediction --device cuda
+  Outputs include observed/predicted-inner PLYs, predictions.npz, diagnostics,
+  and predicted-mhr.obj plus exact MHR inputs if sufficient markers are present.
+  Insufficient marker coverage causes an explicit failed fit, not a fabricated
+  body. Neural prediction itself never receives the ground-truth body mesh.
+  Triangle meshes are sampled from visible surfaces. Observed point-cloud PLY
+  files are also accepted; these must already contain only observed points.
+  Prediction replaces its generated outputs, removing previous body-fit files
+  so an unsuccessful rerun cannot display a stale successful reconstruction.
+
+Independent fitter check (known markers; not an AI reconstruction measurement)
+  python run_etch.py oracle-check
+  This checks native MHR identity/similarity recovery against the supplied body.
+  A near-zero oracle error validates the fitter only, not the trained network.
+
+Replay the local engineering smoke (not an accuracy experiment)
+  python -m pytest -q
+  python run_etch.py train --pairs runs/etch/pairs/reference-regular.npz --output runs/etch/checkpoints/development-smoke.pt --steps 80 --points 128 --width 16 --development
+  python run_etch.py predict --scan runs/reference-look/MHR-male-10027/reference-regular/scene.glb --checkpoint runs/etch/checkpoints/development-smoke.pt --output runs/etch/prediction-smoke --points 512 --development
+  The final command currently returns exit code 2: only one marker label is
+  predicted and the minimum is 24. This is a genuine failed neural fit. No
+  predicted body OBJ is produced. The oracle result must not replace it.
+  Generated datasets, local weights and model assets are ignored by Git; the
+  source, fixed marker IDs, reviewed provenance and validation summary are
+  versioned. The existing local scene is needed to replay this exact smoke.
+
+Inspect the data and failed network output
+  python scripts/serve_clothing.py --port 9086
+  With the existing local server running:
+    http://127.0.0.1:9086/web/clothing-viewer/etch.html
+  Training targets: known MHR body supplies the hidden-point answers.
+  Network smoke: actual unvalidated predictions; reference body hidden by
+  default. The slider interpolates vectors for inspection; it is not physics.
+
+Work required before calling this a trained reconstruction system
+  Resolve garment collisions, self-intersections and settling. Generate many
+  distinct subjects with accepted clothing fits and retain untouched bodies
+  as ground truth. Keep all outfits/poses of each person together to prevent
+  subject leakage; measure unseen-garment generalization separately.
+  Implement articulated native-MHR pose optimization and evaluate poses which
+  differ from neutral. Benchmark a full training configuration on the EC2 GPU.
+  Train from scratch and measure held-out body/marker errors in millimetres,
+  runtime, scale/height error and failure rate by garment looseness. Evaluate
+  real observed scans separately. Compare the independent backbone to the
+  paper architecture before making any ETCH-equivalent accuracy claim.
+
+Current limits
+  The cloth prototype still fails collision/settling checks. Only a labelled
+  development pair has been exported from it. Local CPU tests and a small fresh
+  training smoke do not validate accuracy on unseen subjects or dynamic poses.
+  No full-dataset training, EC2 GPU benchmark, moving-arm cloth simulation, RGB
+  video reconstruction or articulated body recovery is claimed. Metric scale
+  must be supplied by the 3D capture; this is not an exact-height guarantee from
+  an ordinary monocular video. See reports/etch-validation.json for actual runs.
