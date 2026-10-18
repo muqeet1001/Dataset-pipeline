@@ -21,7 +21,7 @@
       "height_cm": 156.0,
       "vertices": 18439,
       "triangles": 36874,
-      "avatar_sha256": "649b7e7557a9891bc6ed06d1a8aa26bad9e094cc90b886b62586e29f31ae4d19",
+      "avatar_sha256": "d7b9123e4f519428c928cd0e7eec1c604fb1ad8200bcd544c3e4229e8ef982a1",
       "status": "waiting_for_garment_catalog",
       "requested_fits": [
         "tight",
@@ -36,7 +36,7 @@
       "height_cm": 177.6000061,
       "vertices": 18439,
       "triangles": 36874,
-      "avatar_sha256": "ae6a0b599a4f18724beda1d08df174383e40cf62241730bb8063a37432256040",
+      "avatar_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
       "status": "waiting_for_garment_catalog",
       "requested_fits": [
         "tight",
@@ -52,5 +52,6 @@
     "MHR avatar units, anchors and pose",
     "Fabric/gravity configuration and sufficient simulation",
     "Exported dimensions, materials and observed fit"
-  ]
+  ],
+  "portable_OBJ_line_endings": "LF with a single final newline; both samples verified"
 }

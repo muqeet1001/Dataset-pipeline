@@ -89,6 +89,8 @@ def test_preparation_exports_unchanged_avatar_and_three_jobs(library, tmp_path):
     plan = json.loads(plan_path.read_text())
     assert not plan['native_simulation_executed']
     assert plan['status'] == 'prepared_not_executed'
+    obj_bytes = (plan_path.parent / 'avatar.obj').read_bytes()
+    assert b'\r\n' not in obj_bytes and obj_bytes.endswith(b'\n') and not obj_bytes.endswith(b'\n\n')
     assert len({json.loads((plan_path.parent / job['file']).read_text())['garment_id'] for job in plan['jobs']}) == 1
     original = trimesh.load_mesh(directory / 'body.ply', process=False)
     exported = trimesh.load_mesh(plan_path.parent / 'avatar.obj', process=False)

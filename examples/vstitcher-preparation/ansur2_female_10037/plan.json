@@ -4,11 +4,11 @@
   "subject_id": "ansur2_female_10037",
   "sex": "female",
   "seed": 42,
-  "config_fingerprint": "1ad661f082e17aecad70603a6a18668b9c94786ed30717a43c1abd4a669c3ec5",
+  "config_fingerprint": "4aaedceee7d0bf30b500a0056137fc437a13d63bc4ac03f77e267f7320282539",
   "source_mesh_sha256": "c209cf3c8b44e17d1e4460f43cb128596be9d887c0f53cddade7ebc5ae9a3311",
   "avatar": {
     "file": "avatar.obj",
-    "sha256": "649b7e7557a9891bc6ed06d1a8aa26bad9e094cc90b886b62586e29f31ae4d19",
+    "sha256": "d7b9123e4f519428c928cd0e7eec1c604fb1ad8200bcd544c3e4229e8ef982a1",
     "units": "cm",
     "vertical_axis": "Y",
     "height_cm": 156.0

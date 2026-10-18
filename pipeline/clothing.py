@@ -160,8 +160,8 @@ class ClothingStage:
             raise ValueError('Avatar height or Y-up grounding differs from the accepted mesh')
         avatar_path = directory / 'avatar.obj'
         avatar_path.write_text(
-            '# Dataset-pipeline: centimetres; Y up; feet at Y=0\n' + trimesh.exchange.obj.export_obj(avatar, include_normals=True, include_texture=False, digits=8),
-            encoding='utf-8',
+            ('# Dataset-pipeline: centimetres; Y up; feet at Y=0\n' + trimesh.exchange.obj.export_obj(avatar, include_normals=True, include_texture=False, digits=8)).rstrip() + '\n',
+            encoding='utf-8', newline='\n',
         )
         loaded = trimesh.load_mesh(avatar_path, process=False)
         if not np.array_equal(avatar.faces, loaded.faces) or not np.allclose(avatar.vertices, loaded.vertices, atol=1e-7, rtol=0):
