@@ -107,5 +107,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     plan = prepare(ROOT)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(plan, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    args.output.write_text(json.dumps(plan, indent=2, sort_keys=True) + '\n', encoding='utf-8', newline='\n')
     print(f"Prepared {len(plan['bodies'])} subjects and {len(plan['cases'])} NOT-RUN cases per backend: {args.output}")

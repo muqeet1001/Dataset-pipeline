@@ -1,13 +1,13 @@
 {
   "artifacts": {
     "reports/cloth-benchmark-plan.json": {
-      "sha256": "74e1f5e7b000e469bf94e9b3fdc6af054c3bfae348b62697f31308613c35443e"
+      "sha256": "4dcd5a3b5d3dc3c5660756ae1cc1df0507f14d2c9ed16ce305610d73e05e388d"
     },
     "reports/cloth-source-review.json": {
-      "sha256": "fc6a9648d95a1c1f00c5b58b62c89225b3c774d3877168ba1f36a4409e66a4b6"
+      "sha256": "1a9b65fa02faa86ff215cce5217eab2859b72507dde206756c52d81109e2af4f"
     },
     "scripts/prepare_cloth_benchmark.py": {
-      "sha256": "cb608267ef16be9159ec76df62b0ec78ab91f614b534fec32056ec60bac55215"
+      "sha256": "35c112d39bfe7babbc9273c99b4b27f33d6c828b62a203fc85c56b43923b21b0"
     }
   },
   "ec2_gpu_benchmark_run": false,
@@ -19,6 +19,7 @@
     "cases_per_fit": 20,
     "dataset_source_hashes_verified_by_existing_importer": true,
     "deterministic_byte_identical_repeated_generation": true,
+    "portable_lf_line_endings": true,
     "subjects_by_sex": {
       "female": 7,
       "male": 7
