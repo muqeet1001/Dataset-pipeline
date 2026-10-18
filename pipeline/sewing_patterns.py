@@ -9,11 +9,21 @@ import trimesh
 from scipy.spatial import Delaunay
 from shapely.geometry import Polygon, Point, LineString
 
+STANDARD_FITS = ('tight', 'medium', 'loose')
 PROFILES = {
     'tight': {'chest_ease_m': .025, 'hip_ease_m': .06, 'ankle_circumference_m': .30,'crotch_drop_m':.014},
     'medium': {'chest_ease_m': .115, 'hip_ease_m': .14, 'ankle_circumference_m': .36,'crotch_drop_m':.028},
     'loose': {'chest_ease_m': .235, 'hip_ease_m': .24, 'ankle_circumference_m': .44,'crotch_drop_m':.045},
 }
+# Original designs graded to the visible proportions in the supplied reference.
+# The measured body is retained. Caption ease values are design targets only;
+# the MP4 does not identify its patterns, fabric calibration or source avatar.
+REFERENCE_FITS = ('reference-tight', 'reference-regular', 'reference-relaxed', 'reference-loose')
+for label, ease in zip(REFERENCE_FITS, (.136, .209, .303, .348)):
+    PROFILES[label] = {'chest_ease_m': ease, 'hip_ease_m': .20,
+        'ankle_circumference_m': .40, 'ankle_elastic_circumference_m': .255,
+        'crotch_drop_m': .05, 'hem_y_m': .865,
+        'reference_style': True, 'label': label.removeprefix('reference-').title()}
 
 
 def _panel(corners, tags, spacing):
@@ -50,7 +60,7 @@ def _panel(corners, tags, spacing):
 def _shirt(profile):
     w=(.993+profile['chest_ease_m'])/4
     # A short-sleeve tee with a real front scoop; shoulders carry its weight.
-    hem=.885 if profile['chest_ease_m']>.2 else .90
+    hem=profile.get('hem_y_m', .885 if profile['chest_ease_m']>.2 else .90)
     grade=(profile['chest_ease_m']-.025)/6
     cuff_half=(.17+grade*1.5)/2/np.sqrt(2)
     right=np.array([[w,hem],[w,1.305],[.38+grade-cuff_half,1.29-cuff_half],
@@ -78,14 +88,24 @@ def _pants(profile):
     # makes one continuous pair of trousers with three open boundaries.
     thigh=(.523+profile['hip_ease_m']*.5)/4
     crotch=profile['body_crotch_y_m']-profile['crotch_drop_m']
-    right=np.array([[waist,1.035],[hip,.89],[.18+thigh,.745],[.22+knee,.47],[.24+cuff,.13],
-                    [.24-cuff,.13],[.22-knee,.47],[.18-thigh,.745],
-                    [.035,crotch-.018],[0,crotch]])
+    if profile.get('reference_style'):
+        # A full-width fabric hem is gathered by a separate physical elastic
+        # spring ring. Its fabric rest metric is not shrunk or baked into folds.
+        right=np.array([[waist,1.035],[hip,.89],[.18+thigh,.745],[.22+knee,.47],
+            [.24+cuff,.17],[.24+cuff,.10],[.24-cuff,.10],[.24-cuff,.17],
+            [.22-knee,.47],[.18-thigh,.745],[.035,crotch-.018],[0,crotch]])
+        side_tags=['outer-hip','outer-thigh','outer-leg','outer-ankle','outer-cuff',
+            'open-cuff','inner-cuff','inner-ankle','inner-leg','crotch1','crotch2']
+        tags=['open-waist']+[tag+'-R' for tag in side_tags]+[tag+'-L' for tag in side_tags[::-1]]
+    else:
+        right=np.array([[waist,1.035],[hip,.89],[.18+thigh,.745],[.22+knee,.47],[.24+cuff,.13],
+                        [.24-cuff,.13],[.22-knee,.47],[.18-thigh,.745],
+                        [.035,crotch-.018],[0,crotch]])
+        tags=['open-waist','outer-hip-R','outer-thigh-R','outer-leg-R','outer-ankle-R','open-cuff-R',
+              'inner-ankle-R','inner-leg-R','crotch-R1','crotch-R2',
+              'crotch-L2','crotch-L1','inner-leg-L','inner-ankle-L','open-cuff-L',
+              'outer-ankle-L','outer-leg-L','outer-thigh-L','outer-hip-L']
     corners=np.vstack([[-waist,1.035],right,right[-2::-1]*[-1,1]])[:-1]
-    tags=['open-waist','outer-hip-R','outer-thigh-R','outer-leg-R','outer-ankle-R','open-cuff-R',
-          'inner-ankle-R','inner-leg-R','crotch-R1','crotch-R2',
-          'crotch-L2','crotch-L1','inner-leg-L','inner-ankle-L','open-cuff-L',
-          'outer-ankle-L','outer-leg-L','outer-thigh-L','outer-hip-L']
     assert len(corners)==len(tags),(len(corners),len(tags))
     return corners,corners.copy(),tags
 
@@ -145,7 +165,7 @@ def draft(body,fit,face_budget=3500):
         # Face budget is approximate; never decimate sewing boundaries.
         area=Polygon(front).area+Polygon(back).area
         spacing=np.sqrt(area/(face_budget*.433))
-        charts=[]; chart_faces=[]; positions=[]; faces=[]; seam_lookup={}; supports=[]
+        charts=[]; chart_faces=[]; positions=[]; faces=[]; seam_lookup={}; supports=[]; cuffs=[]
         for side,corners in [(1,front),(-1,back)]:
             uv,tri,labels,segments,n_boundary=_panel(corners,tags,spacing)
             arranged=_arrange(uv,segments,name,side,profile)
@@ -165,6 +185,7 @@ def draft(body,fit,face_budget=3500):
                     positions[index]=(positions[index]+arranged[i])/2
                 else:
                     index=len(positions);positions.append(arranged[i]);supports.append(name=='pants' and i<n_boundary and abs(p[1]-1.035)<1e-7)
+                    cuffs.append(name=='pants' and profile.get('reference_style',False) and i<n_boundary and abs(p[1]-.10)<1e-7)
                     if seam_key is not None:seam_lookup[seam_key]=index
                 mapping.append(index)
             mapping=np.asarray(mapping)
@@ -194,14 +215,25 @@ def draft(body,fit,face_budget=3500):
                 if key in lengths and abs(lengths[key]-length)>1e-6:
                     raise ValueError('Paired sewing edges have unequal cut lengths')
                 lengths[key]=length
+        edges=mesh.edges_unique
+        boundary=np.bincount(mesh.edges_unique_inverse)==1
+        cuff_edges=edges[boundary & np.asarray(cuffs)[edges].all(axis=1)]
+        cuff_rest=np.array([lengths[tuple(e)] for e in cuff_edges])
+        if len(cuff_edges):
+            cuff_rest*=profile['ankle_elastic_circumference_m']/profile['ankle_circumference_m']
         garments.append({'name':name,'mesh':mesh,'panel_vertices':charts,'panel_indices':chart_faces,
             'pinned':np.asarray(supports,dtype=bool),
+            'elastic_edges':cuff_edges, 'elastic_rest_lengths':cuff_rest,
+            'color':[238,237,232,255] if name=='shirt' else [89,117,151,255],
             'rest_edge_lengths':np.array([lengths[tuple(e)] for e in mesh.edges_unique]),
             'draft':{'method':'two flat cut panels with paired sewn side, shoulder and crotch boundaries',
                      'pattern_scope':'original short-sleeve tee and elastic-waist trousers',
                      'profile':profile,'flat_area_m2':area*scale**2,'target_spacing_m':spacing*scale,
                      'support_type':'waistband edge only' if name=='pants' else 'none; shoulder and body contact',
                      'support_vertices':int(sum(supports)),'bending_rest_angle_rad':0,
+                     'elastic_cuff_edges':len(cuff_edges),
+                     'elastic_cuff_rest_circumference_m':profile.get('ankle_elastic_circumference_m',0)*scale,
+                     'elastic_ring_stiffness_n_m':80 if len(cuff_edges) else 0,
                      'fabric_scope':'assumed isotropic cotton-like preset; not calibrated',
                      'landmark_scope':'supplied upright male MHR A-pose'}})
     return garments

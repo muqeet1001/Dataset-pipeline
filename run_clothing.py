@@ -20,6 +20,9 @@ def main():
     parser.add_argument('--no-browser',action='store_true')
     parser.add_argument('--device',default='cpu')
     parser.add_argument('--steps',type=int,default=150)
+    parser.add_argument('--preset',choices=['standard','reference'],default='standard')
+    parser.add_argument('--face-budget',type=int,default=1800)
+    parser.add_argument('--contact-every',type=int,default=1)
     parser.add_argument('--port',type=int,default=9086)
     args=parser.parse_args()
     python=ROOT/'.venv'/('Scripts/python.exe' if sys.platform=='win32' else 'bin/python')
@@ -34,14 +37,17 @@ def main():
     viewer=ROOT/'web/clothing-viewer'
     if not (viewer/'node_modules/three/package.json').exists():
         subprocess.check_call(['npm.cmd' if sys.platform=='win32' else 'npm','ci','--ignore-scripts','--no-audit','--no-fund'],cwd=viewer)
-    saved=ROOT/'runs/local-avatar/MHR-male-10027'
+    saved=ROOT/('runs/reference-look/MHR-male-10027' if args.preset=='reference' else 'runs/local-avatar/MHR-male-10027')
     example=ROOT/'examples/clothing-pilot/MHR-male-10027'
-    if not saved.exists() and (example/'manifest.json').exists():
+    if args.preset=='standard' and not saved.exists() and (example/'manifest.json').exists():
         shutil.copytree(example,saved)
     url=f'http://127.0.0.1:{args.port}/web/clothing-viewer/'
+    if args.preset=='reference':
+        url+='reference.html'
     try:
         with urllib.request.urlopen(url,timeout=2) as response:
-            if b'MHR cloth fitting' not in response.read():
+            content=response.read()
+            if not any(marker in content for marker in (b'MHR cloth fitting',b'Reference garment fits')):
                 raise RuntimeError('Viewer port belongs to a different local service')
     except urllib.error.URLError:
         (ROOT/'work').mkdir(exist_ok=True)
@@ -66,7 +72,8 @@ def main():
     code=0
     if not args.view_only:
         code=subprocess.call([str(python),'-u','-m','pipeline.avatar_clothing','--device',args.device,
-            '--steps',str(args.steps),'--substeps','4','--iterations','12','--face-budget','1800'],cwd=ROOT)
+            '--steps',str(args.steps),'--substeps','4','--iterations','12','--face-budget',str(args.face_budget),
+            '--preset',args.preset,'--contact-every',str(args.contact_every),'--output',str(saved)],cwd=ROOT)
         if code not in (0,2):
             print('Cloth run failed. Inspect the terminal and saved manifest before retrying.')
             return code

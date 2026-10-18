@@ -15,6 +15,14 @@ See `docs/local-avatar-clothing.md` for the one-command launch, actual scope,
 CPU-only environment, support constraints and validation status. This is a local
 prototype; it does not complete the full dataset/female/GPU benchmark scope below.
 
+The supplied video is now the visual target for an original white tee and blue
+elastic-cuff jogger preset. Run
+`python run_clothing.py --preset reference --contact-every 4`,
+or use `RUN-REFERENCE-CLOTHING.cmd`. It generates four separate
+fit cases and opens `web/clothing-viewer/reference.html`. See
+`docs/reference-clothing-target.txt` for the scope and acceptance criteria.
+Reference matching, calibrated fabric and moving-arm cloth are not yet validated.
+
 The earlier body-shell prototype passed numerical checks but failed visual review.
 Its archived comparison is shown below; it is not a claim of realistic fabric fit.
 

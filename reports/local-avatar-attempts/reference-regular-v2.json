@@ -1,0 +1,57 @@
+{
+  "status": "needs_review",
+  "scope": "Original reference design; regular completed, remaining fits interrupted for ETCH review",
+  "configuration": {
+    "contact_every": 4,
+    "device": "cpu",
+    "face_budget": 1800,
+    "iterations": 12,
+    "solver": "vbd",
+    "steps": 150,
+    "substeps": 4
+  },
+  "quality": {
+    "finite": true,
+    "garments": {
+      "pants": {
+        "body_crossing_edges": 17,
+        "body_inside_samples_over_tolerance": 1,
+        "edge_strain_max_abs": 0.3889778522347156,
+        "edge_strain_p95_abs": 0.11187154183454012,
+        "max_body_penetration_m": 0.0019783636650177053,
+        "self_crossing_edges": 17,
+        "triangles": 1900,
+        "vertices": 975
+      },
+      "shirt": {
+        "body_crossing_edges": 25,
+        "body_inside_samples_over_tolerance": 15,
+        "edge_strain_max_abs": 0.46157287176291684,
+        "edge_strain_p95_abs": 0.11732627259625984,
+        "max_body_penetration_m": 0.020738293409621276,
+        "self_crossing_edges": 19,
+        "triangles": 1882,
+        "vertices": 978
+      }
+    },
+    "geometry_pass": false,
+    "inter_garment_crossing_edges": 29,
+    "limitations": [
+      "Original prototype tee and elastic-waist trouser sewing patterns",
+      "Fabric parameters are uncalibrated assumptions",
+      "No comparison against physical garments or MD/VStitcher yet"
+    ],
+    "numerical_pass": false,
+    "physical_fit_calibrated": false,
+    "settled": false,
+    "tolerances": {
+      "body_penetration_m": 0.001,
+      "segment_endpoint_exclusion_m": 1E-05
+    }
+  },
+  "total_seconds": 560.526446099997,
+  "body_faces_unchanged": true,
+  "body_roundtrip_max_error_m": 5.7270459041802724E-08,
+  "training_ready": false,
+  "limitation": "Elastic springs currently shorten adjacent fabric edges and do not yet create adequate gathered cuffs. Further garment and collision work is required."
+}

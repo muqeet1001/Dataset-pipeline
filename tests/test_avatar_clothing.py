@@ -12,7 +12,7 @@ pytest.importorskip('skimage', reason='Install requirements-cloth.txt for the op
 from pipeline.avatar_clothing import load_body, ROOT
 from pipeline.body_contact import BodyContact
 from pipeline.cloth_quality import edge_crossings
-from pipeline.sewing_patterns import draft
+from pipeline.sewing_patterns import draft, REFERENCE_FITS
 from pipeline.cloth_receipts import job_lock, reusable
 
 
@@ -68,6 +68,27 @@ def test_drafts_grade_cloth_and_preserve_body():
                 assert 3 <= g['pinned'].sum() < len(g['mesh'].vertices)*.2
     np.testing.assert_array_equal(before,body.vertices)
     assert all(np.diff(a).min()>0 for a in areas.values())
+
+
+def test_reference_trousers_have_two_free_physical_elastic_cuffs():
+    body, _, _ = load_body(ROOT / 'inputs/MHR-male-10027')
+    shirt, pants = draft(body,REFERENCE_FITS[1],1600)
+    edges=pants['elastic_edges']
+    # Separate rings must go round both ankles, not bridge between the legs.
+    assert len(edges)>8
+    x=pants['mesh'].vertices[edges,0]
+    assert np.all(np.sign(x[:,0])==np.sign(x[:,1]))
+    assert not pants['pinned'][edges].any()
+    assert not shirt['pinned'].any()
+    for sign in (-1,1):
+        ring=x.mean(axis=1)*sign>0
+        assert pants['elastic_rest_lengths'][ring].sum()==pytest.approx(.255)
+    # Cloth remains full-width; gathering is produced by separate elastic.
+    lookup={tuple(e):v for e,v in zip(pants['mesh'].edges_unique,pants['rest_edge_lengths'])}
+    assert sum(lookup[tuple(e)] for e in edges)==pytest.approx(.80)
+    assert len(np.unique(edges))==len(edges)
+    assert np.bincount(pants['mesh'].edges_unique_inverse).max()==2
+    assert pants['mesh'].is_winding_consistent
 
 
 def test_triangle_edge_crossing_detects_collision_with_outside_endpoints():

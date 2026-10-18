@@ -1,0 +1,57 @@
+REFERENCE CLOTHING TARGET — 19 October 2026
+
+The user supplied a 10-second, 1920 x 800, 15 fps MP4 showing four white
+short-sleeved T-shirts and blue trousers. The comparison labels are Tight,
+Regular, Relaxed and Loose. The trousers have gathered ankle cuffs. The avatar
+raises its arms and the view turns. The user requested original garments built
+with our own technology and no further questions.
+
+Implementation
+  Original flat cut panels: pipeline/sewing_patterns.py
+  Physics: pinned Newton/Warp VBD, Python, CPU locally or CUDA where available
+  Viewer: Three.js, web/clothing-viewer/reference.html
+  Source body: the supplied MHR-male-10027, 177.6 cm, preserved unchanged
+
+The reference presets use the caption's visible chest-ease targets of 13.6,
+20.9, 30.3 and 34.8 cm. These are approximate design targets on OUR avatar,
+not a recovery of the source video's pattern dimensions or material settings.
+The fabric pattern remains full width at the ankles. Separate springs gather
+the hem to a 25.5 cm elastic rest circumference; their edge stiffness scales
+with the discretization so the whole ring has an 80 N/m assumed stiffness.
+No downloaded shirt/trouser FBX or proprietary garment simulator is used.
+
+Run from the repository:
+  python run_clothing.py --preset reference --contact-every 4
+Or double-click RUN-REFERENCE-CLOTHING.cmd on Windows.
+
+Reopen existing outputs without starting simulation:
+  python run_clothing.py --preset reference --view-only
+
+The CPU preview applies supplemental sampled body contact once per four
+Newton substeps. Newton still evaluates its contacts every substep. Use
+--contact-every 1 to apply the supplemental correction every substep, then
+compare the actual quality reports. The validation tolerances are unchanged.
+This option is a scheduling choice, not an established speed/accuracy result.
+
+Each fit exports its actual cloth trajectory, final GLB/OBJ, flat pattern data,
+elastic data, provenance and independent collision/strain/settling report.
+Bad fits remain needs_review and are not labelled training ready. The viewer
+must display each actual result rather than rescale one outfit into four sizes.
+
+The turntable rotates the rendered view. It does not animate the body or
+simulate cloth on moving arms. Matching the reference's articulated motion
+remains unfinished. Fabric calibration and a validated all-fit dataset run
+also remain unfinished; a matching colour/render does not establish these.
+
+Visual acceptance targets
+  Crew neck and open sleeves; no rigid pinned collar.
+  White fabric has soft folds and a hanging hem.
+  Blue trousers have taper and actual gathered cuffs.
+  All four designs have distinguishable shirt ease on the unchanged avatar.
+  No visible holes, body crossings or shirt/trouser crossings in a full turn.
+  Verify the saved numerical reports and recorded drape, not only one frame.
+
+Arm-motion acceptance target, not implemented yet
+  Raise/lower the arms through actual body poses and solve cloth at each pose;
+  retain per-frame body and cloth geometry. Merely rotating or deforming the
+  displayed garment is not evidence of simulated garment motion.

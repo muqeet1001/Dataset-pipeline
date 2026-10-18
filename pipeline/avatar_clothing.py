@@ -9,7 +9,7 @@ import time
 import numpy as np
 import trimesh
 
-from .sewing_patterns import draft, PROFILES
+from .sewing_patterns import draft, PROFILES, STANDARD_FITS, REFERENCE_FITS
 from .cloth_quality import validate
 from .cloth_receipts import job_lock, reusable
 
@@ -52,7 +52,7 @@ def load_body(folder):
 def export_scene(path, body, garments):
     scene = trimesh.Scene()
     for name, mesh, color in [('body', body, [191, 168, 147, 255])] + [
-        (g['name'], g['mesh'], [46, 115, 172, 255] if g['name'] == 'shirt' else [49, 57, 72, 255])
+        (g['name'], g['mesh'], g.get('color',[46, 115, 172, 255] if g['name'] == 'shirt' else [49, 57, 72, 255]))
         for g in garments]:
         mesh = mesh.copy()
         mesh.visual = trimesh.visual.TextureVisuals(material=trimesh.visual.material.PBRMaterial(
@@ -107,6 +107,17 @@ def simulate(body, garments, args, progress):
                 np.add.at(masses,mesh.faces.ravel(),np.repeat(area*.25/3,3))
                 builder.particle_mass[start:]=masses.tolist()
                 builder.edge_rest_angle[edge_start:]=[0.]*(builder.edge_count-edge_start)
+            if len(garment.get('elastic_edges',[])):
+                if args.solver!='vbd':
+                    raise ValueError('The physical elastic-cuff adapter currently requires VBD')
+                for edge,rest_length in zip(garment['elastic_edges'],garment['elastic_rest_lengths']):
+                    # Springs are in series around each cuff. Scale each edge
+                    # by its share of the ring so refinement preserves the
+                    # specified whole-ring stiffness, rather than weakening it.
+                    circumference=garment['draft']['elastic_cuff_rest_circumference_m']
+                    stiffness=80*circumference/float(rest_length)
+                    builder.add_spring(start+int(edge[0]),start+int(edge[1]),ke=stiffness,kd=.02,control=0)
+                    builder.spring_rest_length[-1]=float(rest_length)
             stop = builder.particle_count
             ranges.append((start, stop))
             for index in np.flatnonzero(garment['pinned']):
@@ -142,11 +153,11 @@ def simulate(body, garments, args, progress):
         settled = False
         solve_started = time.perf_counter()
         for frame in range(args.steps):
-            for _ in range(args.substeps):
+            for substep in range(args.substeps):
                 state.clear_forces()
                 pipeline.collide(state, contacts)
                 solver.step(state, target, control, contacts, 1 / 60 / args.substeps)
-                if body_contact is not None:
+                if body_contact is not None and ((substep+1)%args.contact_every==0 or substep==args.substeps-1):
                     body_contact.solve(target)
                 state, target = target, state
             points = state.particle_q.numpy().copy()
@@ -188,7 +199,7 @@ def _run(args):
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     body, metadata, body_hash = load_body(folder)
-    config = {key: getattr(args,key) for key in ('device','solver','steps','substeps','iterations','face_budget')}
+    config = {key: getattr(args,key) for key in ('device','solver','steps','substeps','iterations','face_budget','contact_every')}
     code = {name:digest(Path(__file__).with_name(name)) for name in
             ('avatar_clothing.py','sewing_patterns.py','cloth_quality.py','body_contact.py')}
     key = hashlib.sha256(json.dumps({'body':body_hash,'config':config,'code':code,'profiles':PROFILES},sort_keys=True).encode()).hexdigest()
@@ -197,6 +208,10 @@ def _run(args):
                 'newton_commit':NEWTON_COMMIT,'signature':key,'fits':{},'status':'running',
                 'versions':{p:importlib.metadata.version(p) for p in ('newton','warp-lang','numpy','trimesh')},
                 'body_scope':metadata['body_fit_scope'],'training_ready':False}
+    manifest['fit_order']=[fit for fit in PROFILES if fit in args.fits]
+    manifest['fit_labels']={fit:PROFILES[fit].get('label',fit.title()) for fit in args.fits}
+    manifest['design']='original crew-neck tee and elastic-cuff trousers'
+    manifest['reference_match_validated']=False
     manifest_path=out/'manifest.json'
     if manifest_path.exists():
         try:
@@ -225,7 +240,8 @@ def _run(args):
         for garment in garments:
             np.savez_compressed(destination/(garment['name']+'-rest.npz'),vertices=garment['mesh'].vertices,
                 faces=garment['mesh'].faces, panel_vertices=garment['panel_vertices'],panel_indices=garment['panel_indices'],
-                pinned=garment['pinned'])
+                pinned=garment['pinned'],elastic_edges=garment.get('elastic_edges',[]),
+                elastic_rest_lengths=garment.get('elastic_rest_lengths',[]))
         export_scene(destination/'rest.glb',body,garments)
         manifest['fits'][fit]={'status':'simulating','scene':f'{fit}/rest.glb','report':f'{fit}/fit-report.json'}
         write_json(manifest_path,manifest)
@@ -308,15 +324,20 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input',type=Path,default=ROOT/'inputs/MHR-male-10027')
     parser.add_argument('--output',type=Path,default=ROOT/'runs/local-avatar/MHR-male-10027')
-    parser.add_argument('--fits',nargs='+',choices=list(PROFILES),default=list(PROFILES))
+    parser.add_argument('--fits',nargs='+',choices=list(PROFILES))
+    parser.add_argument('--preset',choices=['standard','reference'],default='standard')
     parser.add_argument('--device',default='cpu')
     parser.add_argument('--solver',choices=['style3d','vbd'],default='vbd')
     parser.add_argument('--steps',type=int,default=180)
     parser.add_argument('--substeps',type=int,default=4)
+    parser.add_argument('--contact-every',type=int,default=1,
+                        help='Apply supplemental sampled body contact every N substeps; the final substep is always corrected')
     parser.add_argument('--iterations',type=int,default=8)
     parser.add_argument('--face-budget',type=int,default=1800)
     parser.add_argument('--force',action='store_true')
     options=parser.parse_args()
-    if min(options.steps, options.substeps, options.iterations, options.face_budget)<1:
+    if options.fits is None:
+        options.fits=list(REFERENCE_FITS if options.preset=='reference' else STANDARD_FITS)
+    if min(options.steps, options.substeps, options.iterations, options.face_budget,options.contact_every)<1:
         parser.error('Steps, substeps, iterations and face budget must be positive')
     raise SystemExit(run(options))

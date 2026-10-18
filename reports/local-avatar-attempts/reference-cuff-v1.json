@@ -1,0 +1,13 @@
+{
+  "status": "development_attempt_stopped",
+  "scope": "Partial original reference-regular design; not an accepted fit",
+  "observed_frame": 45,
+  "observed_elastic_edges": 28,
+  "observed_two_cuff_circumference_m": 0.7971606846,
+  "target_two_cuff_elastic_rest_circumference_m": 0.5100000175,
+  "finding": "A fixed stiffness per edge weakens the whole elastic ring as the mesh is refined. The first attempt did not gather enough.",
+  "correction": "Scale edge stiffness by whole-ring circumference divided by that edge's elastic rest length. The assumed whole-ring stiffness is now independent of edge count.",
+  "partial_files": "runs/reference-cuff-v1 (ignored local development artifacts)",
+  "full_fit_validated": false,
+  "body_motion_implemented": false
+}
