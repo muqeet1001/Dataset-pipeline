@@ -5,12 +5,13 @@
 The dataset import, official MHR setup, mesh tests, sample fitting, and resumable
 per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
-**Pipeline Step 2: PREPARED — VStitcher clothing integration awaiting access.**
+**Pipeline Step 2: PREPARED — native MHR avatar import confirmed.**
 
 The clothing stage selects sex-matched random garments and three graded fit
 conditions: **tight, medium, loose**. It exports an unchanged OBJ avatar and
-prepares native VStitcher jobs. Licensed VStitcher access and a real male/female
-garment catalog are still required for actual simulations. See
+prepares native VStitcher jobs. The generated male sample has been imported into
+the signed-in VStitcher desktop on EC2. CLI/API execution, avatar placement anchors,
+and a real male/female garment catalog still need validation for actual simulations. See
 `docs/step-2-vstitcher.md` for setup, fit definitions and validation scope.
 
 ## Automated run

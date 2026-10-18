@@ -1,7 +1,9 @@
 # Step 2: VStitcher clothing integration
 
-Status: **integration prepared; native simulation validation pending access**.
-The user requested preparation now and will provide VStitcher access later.
+Status: **integration prepared; native avatar import confirmed; clothing simulation pending**.
+The initial preparation checkpoint is followed by a successful desktop import pilot
+on 2026-10-18. The EC2 VStitcher desktop was already signed in; no password was
+entered or stored by this pipeline.
 
 ## Required behavior
 
@@ -30,10 +32,34 @@ to downstream processing for that subject.
   are reusable; missing outputs are retried without regenerating the MHR mesh.
 
 The native script has been tested using an explicit API test double. It has **not**
-been run in VStitcher. No clothed dataset meshes are claimed to exist yet.
+been run in VStitcher. The separate GUI import pilot below confirms OBJ ingestion,
+not native script execution. No clothed dataset meshes are claimed to exist yet.
 The two real OBJ avatars and pending plans are saved in
 `examples/vstitcher-preparation`; the preparation checks are recorded in
 `reports/step-2-preparation-validation.json`.
+
+## Native desktop import pilot
+
+The existing EC2 remote desktop opened VStitcher 2026.2.1 (55315) into an
+authenticated workspace. A copy of
+`examples/vstitcher-preparation/ansur2_male_10027` was transferred through the
+remote desktop clipboard to `C:\Users\Administrator\Desktop\ansur2_male_10027`.
+The local-drive redirection path was rejected, so the imported file was the
+transferred `avatar.obj` on EC2.
+
+In a fresh garment scene, File > Import loaded this OBJ as an avatar. The MHR body
+was visibly rendered upright in its A pose, and Edit Avatar displayed Distance
+From Ground = 0 cm. The scene was left open for inspection. The source mesh has
+18,439 vertices, 36,874 triangles and a local height of 177.6000061 cm; native
+height, topology and a remote checksum have not yet been measured independently.
+
+The editor displayed anchor points, but their anatomical placement has not been
+validated. Imported geometry alone does not establish correct garment preparation
+or fit. No native CLI/API job, garment dressing, three-size simulation, scene
+export or reference VSA save was completed during this pilot. Desktop sign-in
+does not establish that a CLI/Open Platform runtime is installed or usable.
+See `reports/step-2-native-import-check.json` for the bounded result. The earlier
+preparation report remains the record of its original test scope.
 
 ## Fit definitions
 
@@ -73,10 +99,11 @@ status. They are not counted as completed simulations or delivered downstream.
 Once real assets are enrolled, preparation writes `tight/job.json`,
 `medium/job.json`, and `loose/job.json` and remains pending VStitcher execution.
 
-## Supply access and assets later
+## Complete runtime and garment setup
 
-1. Install or locate a licensed VStitcher-CLI on the execution computer and complete
-   its normal StylezoneConnect sign-in. No credentials belong in this repository.
+1. The EC2 desktop is accessible. Locate or install the licensed VStitcher-CLI on
+   the execution computer and verify its normal StylezoneConnect sign-in and API
+   access. No credentials belong in this repository.
 2. Copy the example config and catalog to `clothing.local.json` and
    `garment-catalog.local.json`. These local files and `garments/` are ignored by Git.
 3. Enroll native `.bw`/`.vsgx` garments for both male and female subjects. For each
