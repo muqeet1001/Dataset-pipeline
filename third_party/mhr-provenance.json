@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/facebookresearch/MHR",
+  "commit": "d96fafa33bbf018647c70c3525e91f53e79d2a14",
+  "license": "Apache-2.0",
+  "source": "Complete tracked source tree from git archive; unmodified",
+  "asset_release": "v1.0.1",
+  "asset_url": "https://github.com/facebookresearch/MHR/releases/download/v1.0.1/assets.zip",
+  "asset_sha256": "e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94"
+}
