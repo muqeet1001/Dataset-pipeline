@@ -1,0 +1,3 @@
+data/raw/ansur2/*.csv -text
+*.md text eol=lf
+*.json text eol=lf
