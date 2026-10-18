@@ -1,0 +1,119 @@
+<div id="mhr-mesh-preview">
+  <style>
+    #mhr-mesh-preview { color-scheme:light dark; color:var(--foreground, CanvasText); }
+    #mhr-mesh-preview .mesh-stage { width:100%; height:480px; position:relative; }
+    #mhr-mesh-preview canvas { display:block; width:100%; height:100%; touch-action:none; }
+    #mhr-mesh-preview .mesh-meta { padding:8px 0; }
+  </style>
+  <div class="viz-row mesh-meta">
+    <span class="tabular-nums" data-subject></span>
+    <span class="text-small text-muted" data-height></span>
+  </div>
+  <div class="viz-row">
+    <button class="btn" type="button" data-view="front">Front</button>
+    <button class="btn" type="button" data-view="side">Side</button>
+    <button class="btn" type="button" data-view="angle">3D</button>
+  </div>
+  <div class="mesh-stage" role="img" aria-label="Generated MHR human body mesh. Drag to rotate and scroll to zoom."></div>
+  <span class="text-small text-muted">Drag to rotate · Scroll to zoom</span>
+  <div data-error role="alert" hidden></div>
+  <!--MESH_DATA-->
+  <script type="module">
+  (async () => {
+    const root = document.getElementById('mhr-mesh-preview');
+    try {
+      const THREE = await import('https://esm.sh/three@0.161.0');
+      const { OrbitControls } = await import('https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js');
+      const data = JSON.parse(root.querySelector('[data-mesh]').textContent);
+      root.querySelector('[data-subject]').textContent = data.subject;
+      root.querySelector('[data-height]').textContent = `${data.height.toFixed(1)} cm · ${data.vertices.toLocaleString()} vertices`;
+      const decode = text => Uint8Array.from(atob(text), character => character.charCodeAt(0));
+      const positions = new Float32Array(decode(data.positions).buffer);
+      const indices = new Uint16Array(decode(data.indices).buffer);
+      const stage = root.querySelector('.mesh-stage');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 2000);
+      const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setClearAlpha(0);
+      stage.appendChild(renderer.domElement);
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshStandardMaterial({ roughness:0.72, metalness:0.05, side:THREE.DoubleSide });
+      const body = new THREE.Mesh(geometry, material);
+      scene.add(body);
+      scene.add(new THREE.AmbientLight(0xffffff, 1.6));
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2.3);
+      keyLight.position.set(-160, 230, 240);
+      scene.add(keyLight);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 1.2);
+      fillLight.position.set(180, 150, -120);
+      scene.add(fillLight);
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, data.height / 2, 0);
+      controls.minDistance = data.height * 0.5;
+      controls.maxDistance = data.height * 6;
+      const render = () => renderer.render(scene, camera);
+      function setView(view) {
+        const distance = data.height * 1.9;
+        const positions = { front:[0,data.height / 2,distance], side:[distance,data.height / 2,0], angle:[distance * 0.6,data.height * 0.65,distance * 0.8] };
+        camera.position.fromArray(positions[view]);
+        controls.target.set(0, data.height / 2, 0);
+        controls.update();
+        render();
+      }
+      function restore(state) {
+        const saved = state && state.privateContent;
+        if (saved && saved.camera?.length === 3 && saved.target?.length === 3) {
+          camera.position.fromArray(saved.camera);
+          controls.target.fromArray(saved.target);
+          controls.update();
+          render();
+        }
+      }
+      function save() {
+        if (window.openai?.setWidgetState) {
+          window.openai.setWidgetState({
+            modelContent:{subject:data.subject},
+            privateContent:{camera:camera.position.toArray(),target:controls.target.toArray()}
+          }).catch(() => {});
+        }
+      }
+      controls.addEventListener('change', render);
+      controls.addEventListener('end', save);
+      root.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => { setView(button.dataset.view); save(); }));
+      function resize() {
+        const width = Math.max(1, stage.clientWidth);
+        const height = stage.clientHeight;
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        render();
+      }
+      function theme() {
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--viz-series-1, Highlight)';
+        root.appendChild(probe);
+        material.color.set(getComputedStyle(probe).color);
+        probe.remove();
+        render();
+      }
+      setView('angle');
+      restore(window.openai?.widgetState);
+      window.addEventListener('openai:set_globals', event => restore(event.detail?.globals?.widgetState));
+      new ResizeObserver(resize).observe(stage);
+      new MutationObserver(theme).observe(document.documentElement, {attributes:true, attributeFilter:['class','style']});
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme);
+      theme();
+      resize();
+    } catch (error) {
+      const alert = root.querySelector('[data-error]');
+      alert.hidden = false;
+      alert.textContent = 'The 3D preview could not load. The original body.ply mesh is available with this result.';
+      console.error(error);
+    }
+  })();
+  </script>
+</div>

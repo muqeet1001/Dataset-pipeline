@@ -1,0 +1,41 @@
+{
+  "stage": "Imported Mahmoud dataset, acquired official MHR, tested MHR, and generated initial dataset-derived meshes",
+  "source_dataset_commit": "2f901e81447103dba946b301d844f0fd6476a710",
+  "dataset_records_verified": 6068,
+  "mhr_source_commit": "d96fafa33bbf018647c70c3525e91f53e79d2a14",
+  "mhr_release": "v1.0.1",
+  "model_sha256": "352e271a6c42729c68554ceaea0c955e866970160c31e35506d782dc0f7377bc",
+  "mesh_smoke_test": "passed",
+  "pipeline_unit_tests": {
+    "passed": 5,
+    "failed": 0
+  },
+  "incomplete_fit_rejection_test": "passed; CLI exits with code 2 and writes rejected_fit",
+  "exported_mesh_reproduction": "passed for both subjects; maximum vertex difference < 0.000008 cm",
+  "runtime": {
+    "python": "3.12.2",
+    "torch": "2.10.0+cpu",
+    "numpy": "2.5.1",
+    "scipy": "1.17.1",
+    "trimesh": "4.12.2",
+    "device": "cpu"
+  },
+  "sample_results": [
+    {
+      "subject_id": "ansur2_female_10037",
+      "status": "accepted_proxy_fit",
+      "height_cm": 156.0,
+      "maximum_section_proxy_error_cm": 0.004727908730615127,
+      "mesh_sha256": "c209cf3c8b44e17d1e4460f43cb128596be9d887c0f53cddade7ebc5ae9a3311"
+    },
+    {
+      "subject_id": "ansur2_male_10027",
+      "status": "accepted_proxy_fit",
+      "height_cm": 177.6,
+      "maximum_section_proxy_error_cm": 0.0007754731689146865,
+      "mesh_sha256": "9e7183a68264c88d7f23e443b381b24d0d473d0c746c3abdeedb0dfb39e1b3cf"
+    }
+  ],
+  "scope": "Two dataset records have been fitted. The complete 6068-record mesh batch has not been run.",
+  "measurement_scope": "Height plus three section-perimeter proxies. Remaining anthropometry and mass are retained but unfitted. Anatomical landmark equivalence requires validation."
+}

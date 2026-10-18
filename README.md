@@ -59,3 +59,57 @@ with Y as the vertical axis.
 
 Downloaded model assets and ordinary runs stay outside Git. Each completed step
 is committed separately.
+
+## Step 4: Dataset record to MHR mesh
+
+```sh
+python -m pipeline normalize
+python -m pipeline fit --subject-id ansur2_male_10027 --subject-id ansur2_female_10037
+python -m pipeline verify --directory runs/subjects
+```
+
+The importer converts all 6,068 records to centimetres and kilograms. The fitter
+optimizes the first 20 MHR body identity coefficients using chest, waist and hip
+section perimeters at the corresponding ANSUR height levels. It applies a uniform
+scale to match standing height. Pose, head, hands and facial expression retain their
+neutral defaults. All original anthropometry is retained in each source record.
+
+The generated mesh is produced by a final call to the official MHR model. Each
+subject folder contains `body.ply`, `mhr-inputs.npz`, `source-record.json`, and
+`fit-report.json`. The input file records the exact coefficients, pose, expression
+and scale/grounding transform needed to reproduce the exported mesh. The native
+skeleton is also included and is explicitly labelled as unscaled.
+
+For a full batch, use `python -m pipeline fit --all`. This is an explicit action;
+the checked-in examples cover two records, not a completed 6,068-mesh batch.
+The command exits with code 2 if any completed fit fails its 2 cm perimeter
+tolerance or solver/closed-mesh checks. Failed fits retain a `rejected_fit` report.
+
+These are **estimated bodies** fitted to height and three section-perimeter proxies.
+The section definitions still need anatomical validation; matching these values
+does not establish that all body dimensions match the measured person. Remaining
+measurements and mass are recorded as unfitted. This stage provides an executable
+measurement-to-mesh baseline for the requested initial MHR test.
+
+The tested male and female meshes and reports are in `examples/fitted`. Preview a
+generated mesh by importing `body.ply` in Blender or MeshLab, or build an interactive
+preview with embedded geometry:
+
+```sh
+python scripts/preview_mesh.py --mesh runs/subjects/ansur2_male_10027/body.ply --output mesh-preview.html
+```
+
+The preview uses Three.js from a public CDN. Its geometry is embedded in the file.
+
+Run the pipeline's tests with:
+
+```sh
+python -m pip install -r requirements-dev.txt
+python -m pytest
+```
+
+Tests cover source counts and units, analytic section perimeters and derivatives,
+separation of disjoint limb sections, missing-section rejection, and exact stature
+scaling. Official model inference and exported-mesh reproduction are checked by
+the `smoke-mhr` and `verify` commands. The vendored Python/PyMomentum test suite
+requires its own optional upstream environment.

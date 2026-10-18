@@ -10,6 +10,12 @@ import trimesh
 def load_model(path: Path, threads: int = 4):
     if not path.is_file():
         raise FileNotFoundError(f'{path}: run python scripts/download_mhr_assets.py first')
+    provenance_path = Path(__file__).resolve().parents[1] / 'third_party/mhr-provenance.json'
+    provenance = json.loads(provenance_path.read_text(encoding='utf-8'))
+    with path.open('rb') as stream:
+        digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    if digest != provenance['model_sha256']:
+        raise ValueError(f'MHR model checksum mismatch: {digest}')
     torch.set_num_threads(threads)
     model = torch.jit.load(str(path), map_location='cpu').eval()
     for parameter in model.parameters():

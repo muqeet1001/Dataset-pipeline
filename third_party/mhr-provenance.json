@@ -5,5 +5,6 @@
   "source": "Complete tracked source tree from git archive; unmodified",
   "asset_release": "v1.0.1",
   "asset_url": "https://github.com/facebookresearch/MHR/releases/download/v1.0.1/assets.zip",
-  "asset_sha256": "e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94"
+  "asset_sha256": "e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94",
+  "model_sha256": "352e271a6c42729c68554ceaea0c955e866970160c31e35506d782dc0f7377bc"
 }
