@@ -83,6 +83,7 @@ def run_pipeline(
     summary = {
         'records_selected': len(subjects), 'generated': 0, 'resumed': 0,
         'ready_for_next_stage': 0, 'delivered': 0, 'rejected': 0, 'failed': 0,
+        'pending_next_stage': 0,
     }
 
     with output_lock(output):
@@ -166,24 +167,29 @@ def run_pipeline(
                     event(subject_id, status)
                 else:
                     delivery = checkpoint.get('delivery', {})
-                    if delivery.get('idempotency_key') == handoff['idempotency_key'] and delivery.get('status') == 'complete':
+                    receipt_valid = True
+                    validator = getattr(next_stage, 'validate_receipt', None)
+                    if validator and delivery.get('status') == 'complete':
+                        receipt_valid = validator(delivery.get('receipt', {}))
+                    if delivery.get('idempotency_key') == handoff['idempotency_key'] and delivery.get('status') == 'complete' and receipt_valid:
                         status = 'already_delivered'
                         event(subject_id, status, next_stage=next_stage_id)
                     else:
                         event(subject_id, 'next_stage_started', next_stage=next_stage_id)
                         receipt = next_stage(handoff)
+                        pending = isinstance(receipt, dict) and receipt.get('status') == 'pending'
                         checkpoint['delivery'] = {
-                            'status': 'complete', 'next_stage': next_stage_id,
+                            'status': 'pending' if pending else 'complete', 'next_stage': next_stage_id,
                             'idempotency_key': handoff['idempotency_key'], 'receipt': receipt,
                         }
                         checkpoint.pop('last_error', None)
                         write_json(checkpoint_path, checkpoint)
-                        status = 'delivered'
+                        status = 'pending_next_stage' if pending else 'delivered'
                         event(subject_id, status, next_stage=next_stage_id)
-                    handoff['status'] = 'delivered'
+                    handoff['status'] = 'waiting_for_next_stage' if status == 'pending_next_stage' else 'delivered'
                     handoff['receipt'] = checkpoint['delivery']['receipt']
                     write_json(directory / 'handoff.json', handoff)
-                    summary['delivered'] += 1
+                    summary['pending_next_stage' if status == 'pending_next_stage' else 'delivered'] += 1
                 results.append({'subject_id': subject_id, 'status': status})
             except Exception as error:
                 summary['failed'] += 1

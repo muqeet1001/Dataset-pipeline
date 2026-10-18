@@ -1,3 +1,4 @@
 data/raw/ansur2/*.csv -text
+*.obj -text
 *.md text eol=lf
 *.json text eol=lf

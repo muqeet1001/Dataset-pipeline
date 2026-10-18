@@ -5,6 +5,14 @@
 The dataset import, official MHR setup, mesh tests, sample fitting, and resumable
 per-record handoffs are complete. See `docs/step-1-done.md` for the checkpoint.
 
+**Pipeline Step 2: PREPARED — VStitcher clothing integration awaiting access.**
+
+The clothing stage selects sex-matched random garments and three graded fit
+conditions: **tight, medium, loose**. It exports an unchanged OBJ avatar and
+prepares native VStitcher jobs. Licensed VStitcher access and a real male/female
+garment catalog are still required for actual simulations. See
+`docs/step-2-vstitcher.md` for setup, fit definitions and validation scope.
+
 ## Automated run
 
 After the one-time environment and MHR asset setup below, run:
@@ -34,9 +42,15 @@ mesh, exact MHR inputs, source measurements, fit report, `checkpoint.json`, and
 Rejected or failed meshes are recorded and withheld from the next stage; processing
 continues with the next record and the command exits with code 2 when any record fails.
 
-The next pipeline stage has not been defined yet. Currently, validated meshes wait
-in their handoff files with status `ready_for_next_stage`. When that stage is built,
-connect its Python function and every accepted mesh will be passed to it immediately:
+Connect the prepared clothing stage with:
+
+```sh
+python -m pipeline run --clothing-config configs/clothing.example.json --clothing-mode prepare
+```
+
+Without a clothing config, validated meshes wait in their handoff files with
+status `ready_for_next_stage`. Other local processing functions can be connected
+so every accepted mesh is passed to them immediately:
 
 ```sh
 python -m pipeline run --next-stage my_next_stage:process

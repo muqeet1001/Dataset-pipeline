@@ -34,6 +34,13 @@ def main():
     command.add_argument('--max-error-cm', type=float, default=2.0)
     command.add_argument('--max-evaluations', type=int, default=150)
     command.add_argument('--next-stage', metavar='MODULE:FUNCTION', help='Call this local Python function for every verified mesh')
+    command.add_argument('--clothing-config', type=Path, help='Connect the VStitcher clothing stage')
+    command.add_argument('--clothing-mode', choices=('prepare', 'simulate'), default='prepare')
+    command = commands.add_parser('clothes', help='Prepare clothing for an existing accepted subject mesh')
+    command.add_argument('--subject-dir', type=Path, required=True)
+    command.add_argument('--config', type=Path, default=Path('configs/clothing.example.json'))
+    command.add_argument('--output', type=Path, default=Path('runs/clothing'))
+    command.add_argument('--mode', choices=('prepare', 'simulate'), default='prepare')
     args = parser.parse_args()
     if args.command == 'normalize':
         from .dataset import normalize
@@ -45,6 +52,12 @@ def main():
         from .mhr import load_model
         from .verify import verify_generated
         print(json.dumps(verify_generated(load_model(args.model), args.directory), indent=2))
+    elif args.command == 'clothes':
+        from .clothing import ClothingStage, handoff_from_directory
+        result = ClothingStage(args.config, args.mode, args.output)(handoff_from_directory(args.subject_dir))
+        print(json.dumps(result, indent=2))
+        if args.mode == 'simulate' and result.get('status') == 'pending':
+            raise SystemExit(2)
     elif args.command == 'run':
         import hashlib
         import importlib
@@ -69,6 +82,13 @@ def main():
         elif args.limit:
             subjects = subjects[:args.limit]
         next_stage = None
+        next_stage_id = args.next_stage
+        if args.next_stage and args.clothing_config:
+            parser.error('Choose --next-stage or --clothing-config, not both')
+        if args.clothing_config:
+            from .clothing import ClothingStage
+            next_stage = ClothingStage(args.clothing_config, args.clothing_mode)
+            next_stage_id = next_stage.stage_id
         if args.next_stage:
             module_name, separator, function_name = args.next_stage.partition(':')
             if not separator or not module_name or not function_name or ':' in function_name:
@@ -93,10 +113,10 @@ def main():
             subjects, args.output,
             lambda subject, directory: fitter.fit(subject, directory, args.max_evaluations),
             lambda directory: verify_subject(model, directory),
-            fitting_config=config, next_stage=next_stage, next_stage_id=args.next_stage,
+            fitting_config=config, next_stage=next_stage, next_stage_id=next_stage_id,
         )
         print(json.dumps({key: value for key, value in report.items() if key != 'results'}, indent=2))
-        if report['rejected'] or report['failed']:
+        if report['rejected'] or report['failed'] or (args.clothing_config and args.clothing_mode == 'simulate' and report['pending_next_stage']):
             raise SystemExit(2)
     else:
         from .dataset import load_subjects

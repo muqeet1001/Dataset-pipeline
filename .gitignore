@@ -8,3 +8,5 @@ runs/
 data/processed/
 build/
 dist/
+*.local.json
+garments/

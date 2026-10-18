@@ -153,3 +153,36 @@ def test_interrupt_then_resume_keeps_completed_record(tmp_path):
     report = execute(tmp_path, stage)
     assert report['resumed'] == 1 and report['generated'] == 1
     assert ('fit', 'subject_a') not in stage.calls
+
+
+def test_pending_next_stage_is_not_recorded_as_delivered(tmp_path):
+    stage = StageDouble()
+    pending = lambda handoff: {'status': 'pending', 'reason': 'waiting_for_access'}
+    first = execute(tmp_path, stage, subjects()[:1], next_stage=pending, next_stage_id='pending:v1')
+    assert first['pending_next_stage'] == 1 and first['delivered'] == 0
+    checkpoint = json.loads((tmp_path / 'subjects/subject_a/checkpoint.json').read_text())
+    assert checkpoint['delivery']['status'] == 'pending'
+    second = execute(tmp_path, stage, subjects()[:1], next_stage=stage.consume, next_stage_id='pending:v1')
+    assert second['resumed'] == 1 and second['delivered'] == 1
+
+
+def test_missing_downstream_outputs_are_reprocessed_without_new_mesh(tmp_path):
+    stage = StageDouble()
+
+    class Consumer:
+        valid = True
+
+        def __call__(self, handoff):
+            self.valid = True
+            return stage.consume(handoff)
+
+        def validate_receipt(self, receipt):
+            return self.valid
+
+    consumer = Consumer()
+    execute(tmp_path, stage, subjects()[:1], next_stage=consumer, next_stage_id='validated:v1')
+    consumer.valid = False
+    stage.calls.clear()
+    second = execute(tmp_path, stage, subjects()[:1], next_stage=consumer, next_stage_id='validated:v1')
+    assert second['resumed'] == 1 and second['delivered'] == 1
+    assert stage.calls == [('verify', 'subject_a'), ('next', 'subject_a')]

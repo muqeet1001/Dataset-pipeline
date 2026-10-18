@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "stage": "vstitcher_clothing",
+  "subject_id": "ansur2_female_10037",
+  "sex": "female",
+  "seed": 42,
+  "config_fingerprint": "1ad661f082e17aecad70603a6a18668b9c94786ed30717a43c1abd4a669c3ec5",
+  "source_mesh_sha256": "c209cf3c8b44e17d1e4460f43cb128596be9d887c0f53cddade7ebc5ae9a3311",
+  "avatar": {
+    "file": "avatar.obj",
+    "sha256": "649b7e7557a9891bc6ed06d1a8aa26bad9e094cc90b886b62586e29f31ae4d19",
+    "units": "cm",
+    "vertical_axis": "Y",
+    "height_cm": 156.0
+  },
+  "fit_label_kind": "intended_from_measured_rest_ease; physical fit not yet verified",
+  "requested_fits": [
+    "tight",
+    "medium",
+    "loose"
+  ],
+  "native_simulation_executed": false,
+  "status": "waiting_for_garment_catalog",
+  "reason": "missing_sex_matched_garments",
+  "jobs": []
+}

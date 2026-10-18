@@ -28,7 +28,9 @@ record failure and returns a nonzero exit code if any record is rejected or fail
 The next stage is selected with `--next-stage module:function`. It is a synchronous
 local Python function that accepts one dictionary and returns a JSON-serializable
 receipt. For example, its signature is `def process(handoff: dict) -> dict`.
-There is no built-in downstream processing stage yet.
+The VStitcher clothing stage can be selected with `--clothing-config` instead.
+Its preparation mode preserves pending state until actual garments and runtime
+access are available. See `step-2-vstitcher.md`.
 
 Relevant handoff fields:
 
@@ -57,6 +59,13 @@ runner preserves the verified mesh and retries delivery on the next invocation.
 If interruption happens after the consumer performs a side effect but before its
 receipt is saved, it may receive that input again. Consumers must deduplicate using
 `idempotency_key`; delivery is at least once across interruptions.
+
+A consumer may return `{"status": "pending", ...}` when it has only prepared a
+job or is awaiting an external dependency. The runner records `pending_next_stage`
+instead of successful delivery and retries on the next invocation, reusing the
+verified mesh. Consumers with persistent outputs may supply a
+`validate_receipt(receipt)` method; invalid or missing downstream outputs trigger
+redelivery without mesh regeneration.
 
 Changes to a record, fitting settings, fitting code, model checksum or relevant
 dependency versions invalidate that record's mesh checkpoint. A different consumer

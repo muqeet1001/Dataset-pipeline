@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "seed": 42,
+  "catalog": "garment-catalog.example.json",
+  "fit_profiles": {
+    "tight": {"minimum_ease_ratio": 0.0, "maximum_ease_ratio": 0.06},
+    "medium": {"minimum_ease_ratio": 0.06, "maximum_ease_ratio": 0.14},
+    "loose": {"minimum_ease_ratio": 0.14, "maximum_ease_ratio": 0.30}
+  },
+  "vstitcher": {
+    "cli_executable": null,
+    "timeout_seconds": 900,
+    "simulation_iterations": 1000,
+    "avatar_reference_vsa": null
+  }
+}
