@@ -115,6 +115,25 @@ def test_corrupt_and_incomplete_outputs_are_not_reused(tmp_path):
     assert reusable(report,'same') is None
 
 
+def test_body_contact_cannot_push_fabric_through_another_layer():
+    wp.init()
+    body=trimesh.creation.box(extents=[2,2,2])
+    triangle=np.array([[.995,-.4,-.4],[.995,.4,-.4],[.995,0,.4]],dtype=np.float32)
+    other=triangle.copy();other[:,0]=1.002
+    points=np.vstack([triangle,other])
+    mesh=trimesh.Trimesh(points,[[0,1,2],[3,4,5]],process=False)
+    model=SimpleNamespace(device=wp.get_device('cpu'),particle_count=6,
+        particle_inv_mass=wp.array([1.,1.,1.,0.,0.,0.],dtype=float,device='cpu'))
+    contacts=BodyContact(body,[{'mesh':mesh}],model)
+    state=SimpleNamespace(particle_q=wp.array(points,dtype=wp.vec3,device='cpu'),
+        particle_qd=wp.zeros(6,dtype=wp.vec3,device='cpu'))
+    contacts.solve(state,iterations=10)
+    actual=state.particle_q.numpy()
+    assert (actual[:3,0]>.995).all()
+    assert (actual[:3,0]<1.002).all()
+    np.testing.assert_array_equal(actual[3:],other)
+
+
 def test_job_lock_is_exclusive_and_released_on_failure(tmp_path):
     with pytest.raises(ValueError):
         with job_lock(tmp_path):

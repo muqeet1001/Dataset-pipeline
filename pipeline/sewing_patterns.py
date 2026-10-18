@@ -10,9 +10,9 @@ from scipy.spatial import Delaunay
 from shapely.geometry import Polygon, Point, LineString
 
 PROFILES = {
-    'tight': {'chest_ease_m': .025, 'hip_ease_m': .06, 'ankle_circumference_m': .30},
-    'medium': {'chest_ease_m': .115, 'hip_ease_m': .14, 'ankle_circumference_m': .36},
-    'loose': {'chest_ease_m': .235, 'hip_ease_m': .24, 'ankle_circumference_m': .44},
+    'tight': {'chest_ease_m': .025, 'hip_ease_m': .06, 'ankle_circumference_m': .30,'crotch_drop_m':.014},
+    'medium': {'chest_ease_m': .115, 'hip_ease_m': .14, 'ankle_circumference_m': .36,'crotch_drop_m':.028},
+    'loose': {'chest_ease_m': .235, 'hip_ease_m': .24, 'ankle_circumference_m': .44,'crotch_drop_m':.045},
 }
 
 
@@ -75,9 +75,10 @@ def _pants(profile):
     # Both cut pieces include two legs. The paired crotch/inside-leg seam
     # makes one continuous pair of trousers with three open boundaries.
     thigh=(.523+profile['hip_ease_m']*.5)/4
+    crotch=profile['body_crotch_y_m']-profile['crotch_drop_m']
     right=np.array([[waist,1.035],[hip,.89],[.18+thigh,.745],[.22+knee,.47],[.24+cuff,.13],
                     [.24-cuff,.13],[.22-knee,.47],[.18-thigh,.745],
-                    [.025,.825],[0,.842]])
+                    [.035,crotch-.018],[0,crotch]])
     corners=np.vstack([[-waist,1.035],right,right[-2::-1]*[-1,1]])[:-1]
     tags=['open-waist','outer-hip-R','outer-thigh-R','outer-leg-R','outer-ankle-R','open-cuff-R',
           'inner-ankle-R','inner-leg-R','crotch-R1','crotch-R2',
@@ -116,8 +117,15 @@ def _arrange(uv, segments, name, side, profile):
 
 
 def draft(body,fit,face_budget=3500):
-    profile=PROFILES[fit]
     scale=float(body.extents[1])/1.776
+    # Upward rays in the gap between the legs measure the actual lowest
+    # central body surface, rather than placing the seam inside the pelvis.
+    z=np.linspace(-.02,.06,5)*scale
+    origins=np.column_stack([np.zeros(len(z)),np.zeros(len(z)),z])
+    points,_,_=body.ray.intersects_location(origins,np.tile([0,1,0],(len(z),1)),multiple_hits=True)
+    hits=points[(points[:,1]>.6*scale)&(points[:,1]<1.05*scale)]
+    if not len(hits):raise ValueError('Cannot measure the upright avatar crotch clearance')
+    profile={**PROFILES[fit],'body_crotch_y_m':float(hits[:,1].min()/scale)}
     garments=[]
     for name, pattern in [('shirt',_shirt),('pants',_pants)]:
         front,back,tags=pattern(profile)

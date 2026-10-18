@@ -41,11 +41,50 @@ def contact_samples(body: wp.uint64, positions: wp.array[wp.vec3], inv_mass: wp.
 
 
 @wp.kernel
+def limit_corrections(cloth: wp.uint64, positions: wp.array[wp.vec3],
+                      indices: wp.array2d[int], weights: wp.array2d[float],
+                      deltas: wp.array[wp.vec3], counts: wp.array[int], limits: wp.array[float]):
+    sample=wp.tid()
+    p=wp.vec3(0.0)
+    motion=wp.vec3(0.0)
+    for k in range(3):
+        v=indices[sample,k]
+        p+=positions[v]*weights[sample,k]
+        if counts[v]>0:
+            motion+=deltas[v]*(weights[sample,k]/float(counts[v]))
+    length=wp.length(motion)
+    if length>1.0e-7:
+        direction=motion/length
+        travelled=float(1.0e-6)
+        factor=float(1.0)
+        for attempt in range(8):
+            query=wp.mesh_query_ray(cloth,p+direction*travelled,direction,length-travelled+0.0002)
+            if not query.result:
+                break
+            incident=False
+            for corner in range(3):
+                target=wp.mesh_get_index(cloth,query.face*3+corner)
+                for k in range(3):
+                    if weights[sample,k]>0.0 and indices[sample,k]==target:
+                        incident=True
+            if not incident:
+                factor=wp.clamp((travelled+query.t-0.0002)*0.45/length,0.0,1.0)
+                break
+            travelled+=query.t+1.0e-6
+            if travelled>length:
+                break
+        if factor<1.0:
+            for k in range(3):
+                if weights[sample,k]>0.0:
+                    wp.atomic_min(limits,indices[sample,k],factor)
+
+
+@wp.kernel
 def apply_contacts(positions: wp.array[wp.vec3], velocities: wp.array[wp.vec3],
-                   deltas: wp.array[wp.vec3], counts: wp.array[int]):
+                   deltas: wp.array[wp.vec3], counts: wp.array[int], limits: wp.array[float]):
     i = wp.tid()
     if counts[i] > 0:
-        correction = deltas[i] / float(counts[i])
+        correction = deltas[i] * (limits[i] / float(counts[i]))
         positions[i] += correction
         length = wp.length(correction)
         if length > 1.0e-8:
@@ -86,14 +125,27 @@ class BodyContact:
         self.inv_mass = model.particle_inv_mass
         self.deltas = wp.zeros(model.particle_count,dtype=wp.vec3,device=model.device)
         self.counts = wp.zeros(model.particle_count,dtype=int,device=model.device)
+        self.limits=wp.ones(model.particle_count,dtype=float,device=model.device)
+        faces=[];offset=0
+        for g in garments:
+            faces.extend((g['mesh'].faces+offset).tolist());offset+=len(g['mesh'].vertices)
+        self.cloth_points=wp.zeros(model.particle_count,dtype=wp.vec3,device=model.device)
+        self.cloth_mesh=(wp.Mesh(points=self.cloth_points,
+            indices=wp.array(np.asarray(faces,dtype=np.int32).ravel(),dtype=int,device=model.device)) if faces else None)
         self.count = len(indices)
         self.vertex_count = model.particle_count
 
     def solve(self, state, iterations=3):
         for _ in range(iterations):
             self.deltas.zero_(); self.counts.zero_()
+            self.limits.fill_(1.0)
             wp.launch(contact_samples,dim=self.count,inputs=[self.body_mesh.id,state.particle_q,self.inv_mass,
-                self.indices,self.weights,.002,self.deltas,self.counts],device=state.particle_q.device)
+                self.indices,self.weights,.004,self.deltas,self.counts],device=state.particle_q.device)
+            if self.cloth_mesh is not None:
+                wp.copy(self.cloth_points,state.particle_q)
+                self.cloth_mesh.refit()
+                wp.launch(limit_corrections,dim=self.count,inputs=[self.cloth_mesh.id,state.particle_q,
+                    self.indices,self.weights,self.deltas,self.counts,self.limits],device=state.particle_q.device)
             wp.launch(apply_contacts,dim=self.vertex_count,inputs=[state.particle_q,state.particle_qd,
-                self.deltas,self.counts],device=state.particle_q.device)
+                self.deltas,self.counts,self.limits],device=state.particle_q.device)
         wp.launch(damp_velocity,dim=self.vertex_count,inputs=[state.particle_qd],device=state.particle_q.device)

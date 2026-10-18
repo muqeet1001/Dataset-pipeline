@@ -1,0 +1,30 @@
+{
+  "body_height_cm": 177.6,
+  "body_scope": "Height and three circumference proxies; other dimensions are not exact",
+  "body_sha256": "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad",
+  "device": "cpu",
+  "fits": {
+    "medium": {
+      "frame": 60,
+      "p95_movement_mm": 0.4460097989067435,
+      "report": "medium/fit-report.json",
+      "scene": "medium/preview.glb?frame=60",
+      "status": "simulating"
+    }
+  },
+  "newton_commit": "f49482ce07e20764110fd147a67c7334eeae638d",
+  "sex": "male",
+  "signature": "f17fcd32ba660b93d203d483a9a5e1393596f0bcb5aff07e325e57ffb342f9b5",
+  "solver": "vbd",
+  "status": "development_attempt_stopped",
+  "subject_id": "ansur2_male_10027",
+  "training_ready": false,
+  "units": "metres",
+  "versions": {
+    "newton": "1.8.0.dev0",
+    "numpy": "2.5.4",
+    "trimesh": "4.12.2",
+    "warp-lang": "1.18.0"
+  },
+  "reason": "Initial pieces had zero self/intersections; frame-45 preview had 18 pant self-crossings. Correcting contact ordering before continuing other fits."
+}

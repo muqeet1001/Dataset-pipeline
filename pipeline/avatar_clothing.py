@@ -88,7 +88,7 @@ def simulate(body, garments, args, progress):
                 builder.add_cloth_mesh(pos=wp.vec3(0,0,0), rot=wp.quat_identity(), scale=1,
                     vel=wp.vec3(0,0,0), vertices=mesh.vertices.tolist(), indices=mesh.faces.flatten().tolist(),
                     density=.25, tri_ke=3000, tri_ka=1000, tri_kd=.002, edge_ke=5e-5, edge_kd=.001,
-                    particle_radius=.002)
+                    particle_radius=.003)
                 if builder.tri_count-tri_start!=len(mesh.faces):
                     raise ValueError('Initial garment arrangement contains collapsed triangles')
                 # The cut panels, rather than the curved arrangement, define
@@ -126,8 +126,8 @@ def simulate(body, garments, args, progress):
             solver = newton.solvers.SolverStyle3D(model, iterations=args.iterations, linear_iterations=8)
         else:
             solver = newton.solvers.SolverVBD(model, iterations=args.iterations,
-                particle_enable_self_contact=True, particle_self_contact_margin=.0035,
-                particle_self_contact_gap=.003)
+                particle_enable_self_contact=True, particle_self_contact_margin=.005,
+                particle_self_contact_gap=.004)
         state, target = model.state(), model.state()
         pipeline = newton.CollisionPipeline(model)
         contacts = pipeline.contacts()
@@ -177,8 +177,8 @@ def simulate(body, garments, args, progress):
                 'max_actual_simulation_displacement_m': float(np.linalg.norm(points-initial,axis=1).max()),
                 'pinned_vertices': sum(int(g['pinned'].sum()) for g in garments),
                 'fabric': {'density_kg_m2': .25, 'stretch': [3000,3000,1000], 'isotropic_bending':5e-5,
-                           'velocity_damping_per_substep':.97, 'body_contact_margin_m':.002,
-                           'self_contact_margin_m':.0035,
+                           'velocity_damping_per_substep':.97, 'body_contact_margin_m':.004,
+                           'self_contact_margin_m':.005,
                            'body_contact_method':'VBD plus sampled MHR triangle-mesh Jacobi constraints',
                            'status':'assumed prototype preset, not physically calibrated'}}
 

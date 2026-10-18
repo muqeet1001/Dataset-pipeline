@@ -66,7 +66,9 @@ membrane forces, body contact, self-contact and inter-garment contact.
 
 On CPU, custom Warp Jacobi contact constraints sample vertices, edge quarters
 and triangle quadrature points against the full unchanged MHR triangle mesh
-inside each physics substep. This supplements Newton body contact. The final
+inside each physics substep. Swept vertex, edge and face samples limit those
+corrections against the cloth mesh so a body correction cannot simply push one
+fabric layer through another. This supplements Newton body contact. The final
 cloth is not shrinkwrapped or repaired after export. Fabric properties remain
 an assumed cotton-like preset; a physical swatch and reference fitting are
 needed for calibration.
@@ -94,10 +96,11 @@ revision must be evaluated separately. `reports/local-avatar-pilot.json` contain
 metrics and timing scope; `reports/local-avatar-resume.json` records an actual
 second launcher run that reused all three scenes without changing them.
 
-Seven local tests cover body identity/units, unknown metadata rejection, graded
+Eight local tests cover body identity/units, unknown metadata rejection, graded
 flat rest sizes, manifold sewing topology, correct garment openings, zero shirt
 pins, noncollapsed arrangement triangles, a triangle crossing missed by vertex-only
-containment, movable/pinned contact behavior, corrupt receipt handling and output
+containment, movable/pinned contact behavior, a body correction blocked by another fabric
+layer, corrupt receipt handling and output
 locking. The existing 27 project tests remain a separate regression suite.
 
 The original complete dataset runner remains working and unchanged. This local

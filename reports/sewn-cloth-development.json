@@ -1,0 +1,56 @@
+{
+  "recorded_utc": "2026-10-18T19:27:48.127382+00:00",
+  "scope": "Sewn revision development evidence, not accepted training samples",
+  "tests": {
+    "cloth_regressions_passed": 8,
+    "existing_pipeline_passed": 27,
+    "optional_cloth_module_skipped_in_base_environment": 1
+  },
+  "contact_order_only_smoke": {
+    "frames": 30,
+    "status": "needs_review",
+    "quality": {
+      "finite": true,
+      "garments": {
+        "pants": {
+          "body_crossing_edges": 19,
+          "body_inside_samples_over_tolerance": 0,
+          "edge_strain_max_abs": 1.53186817573856,
+          "edge_strain_p95_abs": 0.24504854369576,
+          "max_body_penetration_m": 5.6164994876111324e-06,
+          "self_crossing_edges": 39,
+          "triangles": 1910,
+          "vertices": 981
+        },
+        "shirt": {
+          "body_crossing_edges": 81,
+          "body_inside_samples_over_tolerance": 0,
+          "edge_strain_max_abs": 0.5908647190279035,
+          "edge_strain_p95_abs": 0.14319075503207368,
+          "max_body_penetration_m": 0.0009819084239190287,
+          "self_crossing_edges": 0,
+          "triangles": 1876,
+          "vertices": 972
+        }
+      },
+      "geometry_pass": false,
+      "inter_garment_crossing_edges": 0,
+      "limitations": [
+        "Original prototype tee and elastic-waist trouser sewing patterns",
+        "Fabric parameters are uncalibrated assumptions",
+        "No comparison against physical garments or MD/VStitcher yet"
+      ],
+      "numerical_pass": false,
+      "physical_fit_calibrated": false,
+      "settled": false,
+      "tolerances": {
+        "body_penetration_m": 0.001,
+        "segment_endpoint_exclusion_m": 1e-05
+      }
+    },
+    "note": "30-frame smoke was not expected to pass settling; geometry failed independently"
+  },
+  "correction": "Crotch clearance measured from the real mesh; body correction swept samples limited against all cloth before applying positions",
+  "current_full_run": "sewn-v5; result pending at this commit",
+  "real_fabric_calibrated": false
+}
