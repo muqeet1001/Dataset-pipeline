@@ -7,7 +7,7 @@ import trimesh
 from ..avatar_clothing import load_body,write_json
 from .geometry import load_pair
 from .model import aggregate_markers
-from .runtime import load_checkpoint
+from .runtime import load_checkpoint,infer_points
 
 
 def point_metrics(prediction,data):
@@ -38,20 +38,31 @@ def point_metrics(prediction,data):
 
 
 def evaluate(pair,checkpoint,output,*,device='cpu',development=False,
-             input_body=None,mhr_model=None,fit_body=True):
+             input_body=None,mhr_model=None,fit_body=True,yaw_degrees=0.,noise_mm=0.,body_fitter=None):
     torch.set_num_threads(2)
     data,pair_receipt=load_pair(pair,require_training_ready=not development)
     network,checkpoint_receipt=load_checkpoint(checkpoint,device,development)
     marker_sha=checkpoint_receipt['marker_definition_sha256']
     if marker_sha!=pair_receipt['marker_definition_sha256']:
         raise ValueError('Evaluation pair and checkpoint use different marker definitions')
+    if noise_mm<0:raise ValueError('Noise standard deviation must be nonnegative')
+    from scipy.spatial.transform import Rotation
+    rotation=Rotation.from_euler('y',yaw_degrees,degrees=True).as_matrix()
+    if yaw_degrees or noise_mm:
+        data={key:value.copy() for key,value in data.items()}
+        data['outer_points']=(data['outer_points']@rotation.T).astype('f4')
+        data['inner_points']=(data['inner_points']@rotation.T).astype('f4')
+        data['markers']=(data['markers']@rotation.T).astype('f4')
+        data['center_m']=data['center_m']@rotation.T
+        data['outer_points']+=np.random.default_rng(211).normal(0,noise_mm/1000,data['outer_points'].shape).astype('f4')
+        data['vectors_inward']=data['inner_points']-data['outer_points']
     # The only network input is the observed clothed point cloud. Targets below
     # are used after prediction to score the result, never to guide fitting.
-    with torch.inference_mode():
-        raw=network(torch.tensor(data['outer_points'][None],dtype=torch.float32,device=device))
-    prediction={'vectors_inward':raw['vectors_inward'][0].cpu().numpy(),
-                'marker_labels':raw['label_logits'][0].argmax(-1).cpu().numpy(),
-                'marker_confidence':raw['confidence'][0].cpu().numpy()}
+    context_points=checkpoint_receipt.get('points_per_step',len(data['outer_points']))
+    raw=infer_points(network,data['outer_points'],context_points,device)
+    prediction={'vectors_inward':raw['vectors_inward'],
+                'marker_labels':raw['label_logits'].argmax(-1),
+                'marker_confidence':raw['confidence']}
     inner=data['outer_points']+prediction['vectors_inward']
     markers,valid,support=aggregate_markers(inner,prediction['marker_labels'],prediction['marker_confidence'],
                                           network.configuration['markers'])
@@ -63,6 +74,7 @@ def evaluate(pair,checkpoint,output,*,device='cpu',development=False,
                   pair_receipt.get('subject_id') in checkpoint_receipt.get('training_subject_ids',[]))
     scope=('training_points' if pair_receipt['npz_sha256'] in training_hashes else
            'training_subject_resampled_points' if same_subject else 'unseen_subject')
+    if yaw_degrees or noise_mm:scope+='__stress_test'
     report={
         'source':'ACTUAL NEURAL PREDICTION; targets used only for scoring',
         'evaluation_scope':scope,'unseen_subject_accuracy_evaluated':not same_subject,
@@ -70,6 +82,9 @@ def evaluate(pair,checkpoint,output,*,device='cpu',development=False,
         'subject_id':pair_receipt.get('subject_id'),'pair_npz_sha256':pair_receipt['npz_sha256'],
         'checkpoint_sha256':checkpoint_receipt['checkpoint_sha256'],
         'checkpoint_steps':checkpoint_receipt['steps'],'points':point_metrics(prediction,data),
+        'neural_context_points':min(len(data['outer_points']),context_points),
+        'neural_context_protocol':'uniform observed subsets matching training sample count',
+        'stress_test':{'yaw_degrees':yaw_degrees,'gaussian_position_noise_std_mm':noise_mm},
         'valid_markers':int(valid.sum()),'missing_marker_ids':np.flatnonzero(~valid).tolist(),
         'body_fit_status':'not_run','body_reconstruction':None,
     }
@@ -81,15 +96,17 @@ def evaluate(pair,checkpoint,output,*,device='cpu',development=False,
         inner_points=inner+center,markers=markers+center,marker_valid=valid,marker_support=support,**prediction)
     trimesh.points.PointCloud(inner+center).export(output/'predicted-inner.ply')
     if fit_body:
-        if input_body is None or mhr_model is None:raise ValueError('Body fitting/evaluation requires MHR asset and scoring body')
+        if input_body is None or (mhr_model is None and body_fitter is None):raise ValueError('Body fitting/evaluation requires MHR asset and scoring body')
         body,_,body_sha=load_body(input_body)
         if body_sha!=pair_receipt['source_body_sha256']:
             raise ValueError('Scoring body differs from the pair ground truth')
+        body.vertices=body.vertices@rotation.T
         from ..mhr import load_model
         from .body_fit import MHRMarkerFitter
         try:
             if valid.sum()<24:raise ValueError(f'Only {int(valid.sum())} valid marker labels; minimum 24')
-            fitter=MHRMarkerFitter(load_model(Path(mhr_model),threads=2),checkpoint_receipt['marker_definition'])
+            fitter=body_fitter if body_fitter is not None else MHRMarkerFitter(
+                load_model(Path(mhr_model),threads=2),checkpoint_receipt['marker_definition'])
             mesh,fit,inputs=fitter.fit(markers+center,valid)
             mesh.export(output/'predicted-mhr.obj')
             np.savez_compressed(output/'mhr-inputs.npz',**inputs)

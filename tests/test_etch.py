@@ -75,10 +75,21 @@ def test_training_resume_preserves_optimizer_and_sampling_state(tmp_path):
     pair.with_suffix('.json').write_text(json.dumps({'training_ready':False,'subject_id':'unit',
         'source_body_sha256':'unit','npz_sha256':hashlib.sha256(pair.read_bytes()).hexdigest(),
         'marker_definition_sha256':hashlib.sha256(definition.read_bytes()).hexdigest()}))
+    other=tmp_path/'other.npz'
+    np.savez(other,outer_points=points*1.1,inner_points=(points+vectors)*1.1,vectors_inward=vectors*1.1,
+             marker_labels=np.arange(32)%8,marker_confidence=np.full(32,.6,dtype='f4'))
+    record=json.loads(pair.with_suffix('.json').read_text())
+    record.update(subject_id='second',source_body_sha256='second',npz_sha256=hashlib.sha256(other.read_bytes()).hexdigest())
+    other.with_suffix('.json').write_text(json.dumps(record))
+    paths=[pair,other]
     options={'points':24,'width':16,'head_width':32,'development':True,'learning_rate':1e-3}
-    train([pair],definition,tmp_path/'direct.pt',steps=4,**options)
-    train([pair],definition,tmp_path/'partial.pt',steps=2,**options)
-    resumed=train([pair],definition,tmp_path/'resumed.pt',steps=4,resume=tmp_path/'partial.pt',**options)
+    train(paths,definition,tmp_path/'direct.pt',steps=4,**options)
+    train(paths,definition,tmp_path/'partial.pt',steps=2,checkpoint_every=1,**options)
+    periodic=tmp_path/'partial-step-000002.pt'
+    _,periodic_receipt=load_checkpoint(periodic,development=True)
+    assert periodic_receipt['steps']==2 and periodic_receipt['run_status']=='training_checkpoint'
+    assert not periodic_receipt['validation_evaluated']
+    resumed=train(paths,definition,tmp_path/'resumed.pt',steps=4,resume=periodic,**options)
     assert len(resumed['history'])==4 and not resumed['rotation_augmentation']
     direct,_=load_checkpoint(tmp_path/'direct.pt',development=True)
     restored,_=load_checkpoint(tmp_path/'resumed.pt',development=True)
@@ -109,6 +120,55 @@ def test_neural_metrics_measure_errors_in_millimetres():
     score=point_metrics(exact,data)
     assert score['vector_rmse_mm']==pytest.approx(5)
     assert score['label_accuracy']==.5
+
+
+def test_inference_preserves_training_context_size_and_all_observations():
+    from pipeline.etch.runtime import infer_points
+    points=np.arange(39,dtype='f4').reshape(13,3)/20;lengths=[]
+    class Network:
+        configuration={'markers':2}
+        def __call__(self,xyz):
+            lengths.append(xyz.shape[1]);assert not torch.is_grad_enabled()
+            return {'vectors_inward':xyz*.1,'label_logits':torch.stack([xyz[:,:,0],-xyz[:,:,0]],-1),
+                    'confidence':torch.ones(1,xyz.shape[1])}
+    prediction=infer_points(Network(),points,context_points=5)
+    assert lengths==[5,5,5]
+    np.testing.assert_allclose(prediction['vectors_inward'],points*.1)
+    np.testing.assert_allclose(prediction['label_logits'][:,0],points[:,0])
+
+
+def test_stress_evaluation_rotates_targets_and_excludes_targets_from_network(tmp_path,monkeypatch):
+    from pipeline.etch import evaluation
+    rng=np.random.default_rng(13);outer=rng.normal(size=(12,3)).astype('f4')*.2
+    vectors=np.tile([.01,0,0],(12,1)).astype('f4');marker_labels=np.arange(12)%4
+    pair=tmp_path/'pair.npz'
+    np.savez(pair,outer_points=outer,inner_points=outer+vectors,vectors_inward=vectors,
+             marker_labels=marker_labels,marker_confidence=np.full(12,.8,dtype='f4'),
+             markers=outer[:4]+vectors[:4],center_m=np.array([0,.9,0]))
+    digest=hashlib.sha256(pair.read_bytes()).hexdigest()
+    pair.with_suffix('.json').write_text(json.dumps({'training_ready':False,'npz_sha256':digest,
+        'marker_definition_sha256':'unit','source_body_sha256':'unit','subject_id':'unit'}))
+    seen=[]
+    class Network:
+        configuration={'markers':4}
+        def __call__(self,points):
+            seen.append(points.clone())
+            return {'vectors_inward':torch.zeros_like(points),
+                    'label_logits':torch.eye(4).repeat(3,1)[None]*10,
+                    'confidence':torch.full((1,12),.8)}
+    monkeypatch.setattr(evaluation,'load_checkpoint',lambda *args:(Network(),{
+        'marker_definition_sha256':'unit','training_pairs':[{'npz_sha256':digest}],
+        'training_body_hashes':['unit'],'training_subject_ids':['unit'],'development_only':True,
+        'checkpoint_sha256':'unit','steps':1}))
+    report=evaluation.evaluate(pair,tmp_path/'mock.pt',tmp_path/'result',development=True,
+                               fit_body=False,yaw_degrees=90)
+    rotation=Rotation.from_euler('y',90,degrees=True).as_matrix()
+    # Context order is shuffled; the observed positions are unchanged except
+    # for the requested rigid transform. No target positions reach the model.
+    np.testing.assert_allclose(np.sort(seen[0][0].numpy(),axis=0),np.sort(outer@rotation.T,axis=0),atol=1e-7)
+    assert report['points']['vector_rmse_mm']==pytest.approx(10,abs=1e-4)
+    assert not report['unseen_subject_accuracy_evaluated']
+    assert report['evaluation_scope']=='training_points__stress_test'
 
 
 def test_all_fits_of_one_body_stay_in_the_same_dataset_split():

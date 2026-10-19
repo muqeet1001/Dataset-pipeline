@@ -46,8 +46,9 @@ def subject_split(records,development=False):
 
 def train(paths,marker_definition,output,steps=1000,points=5000,width=32,
           device='cpu',development=False,seed=7,learning_rate=1e-4,rotation_augmentation=False,
-          resume=None,head_width=128):
-    if min(steps,points)<1:raise ValueError('Steps and points must be positive')
+          resume=None,head_width=128,checkpoint_every=25):
+    if min(steps,points)<1 or checkpoint_every<0:raise ValueError('Steps/points must be positive and checkpoint interval nonnegative')
+    model_source_sha=hashlib.sha256(Path(__file__).with_name('model.py').read_bytes()).hexdigest()
     paths=[Path(p) for p in paths];definition=json.loads(Path(marker_definition).read_text())
     marker_sha=hashlib.sha256(Path(marker_definition).read_bytes()).hexdigest()
     records=[]
@@ -62,7 +63,7 @@ def train(paths,marker_definition,output,steps=1000,points=5000,width=32,
     torch.set_num_threads(2);torch.manual_seed(seed);rng=np.random.default_rng(seed)
     network=TightnessNetwork(markers=definition['count'],width=width,head_width=head_width).to(device)
     optimizer=torch.optim.Adam(network.parameters(),lr=learning_rate)
-    history=[];started=time.perf_counter();order=np.asarray(train_ids)
+    history=[];started=time.perf_counter();order=np.asarray(train_ids);previous_seconds=0.;segments=[]
     if resume is not None:
         network,previous=load_checkpoint(resume,device,development)
         if previous['marker_definition_sha256']!=marker_sha:raise ValueError('Resume marker definitions differ')
@@ -74,6 +75,10 @@ def train(paths,marker_definition,output,steps=1000,points=5000,width=32,
         for group in optimizer.param_groups:group['lr']=learning_rate
         torch.set_rng_state(saved['torch_rng_state'].cpu());rng.bit_generator.state=saved['numpy_rng_state']
         order=np.asarray(saved['training_order']);history=previous['history']
+        previous_seconds=previous['seconds']
+        segments=previous.get('training_segments',[{
+            'first_step':1,'last_step':previous['steps'],'points_per_step':previous['points_per_step'],
+            'learning_rate':previous['learning_rate'],'rotation_augmentation':previous['rotation_augmentation']}])
         if previous['rotation_augmentation']!=rotation_augmentation:raise ValueError('Resume augmentation setting changed')
         if steps<=len(history):raise ValueError('Requested total steps must exceed the resumed checkpoint')
 
@@ -89,6 +94,45 @@ def train(paths,marker_definition,output,steps=1000,points=5000,width=32,
             'marker_labels':torch.tensor(data['marker_labels'][choice][None],device=device),
             'marker_confidence':torch.tensor(data['marker_confidence'][choice][None],device=device)}
 
+    first_step=len(history)+1
+    output=Path(output);output.parent.mkdir(parents=True,exist_ok=True)
+    def save(destination,finished=False,validation=None):
+        receipt={'adapter':ADAPTER_VERSION,'architecture':'independent G60 encoder and XYZ PointTransformer-style scalar heads',
+            'official_etch_checkpoint_compatible':False,'upstream_commit_reviewed':UPSTREAM_COMMIT,
+            'initialized_from':'random; no pretrained ETCH/ArtEq/CAPE/4D-Dress weights',
+            'model_source_sha256':model_source_sha,
+            'development_only':development or any(not r['training_ready'] for r in records),
+            'training_ready':False,'steps':len(history),'requested_steps':steps,
+            'run_status':'completed_training' if finished else 'training_checkpoint',
+            'points_per_step':points,'seed':seed,'device':str(device),
+            'learning_rate':learning_rate,'rotation_augmentation':rotation_augmentation,
+            'training_segments':[*segments,{'first_step':first_step,'last_step':len(history),
+                'points_per_step':points,'learning_rate':learning_rate,'rotation_augmentation':rotation_augmentation}],
+            'resumed_from':str(resume) if resume is not None else None,
+            'configuration':network.configuration,'marker_definition':definition,'history':list(history),
+            'training_body_hashes':sorted({records[i]['source_body_sha256'] for i in train_ids}),
+            'validation_body_hashes':sorted({records[i]['source_body_sha256'] for i in val_ids}),
+            'training_subject_ids':sorted({records[i]['subject_id'] for i in train_ids if records[i].get('subject_id')}),
+            'validation_subject_ids':sorted({records[i]['subject_id'] for i in val_ids if records[i].get('subject_id')}),
+            'training_pairs':[{'file':str(paths[i]),'npz_sha256':records[i]['npz_sha256']} for i in train_ids],
+            'marker_definition_sha256':marker_sha,
+            'validation_evaluated':bool(finished and val_ids),
+            'validation_mean_multitask_loss':float(np.mean(validation)) if validation else None,
+            'body_fitting_accuracy_evaluated':False,'seconds':previous_seconds+time.perf_counter()-started,
+            'limitations':['Compact backbone differs from the paper EPN/PointTransformer',
+                'Multitask loss is not a body reconstruction accuracy measurement',
+                'No unseen-subject accuracy claim from a development smoke run']}
+        temporary=destination.with_suffix(destination.suffix+'.tmp')
+        torch.save({'adapter':ADAPTER_VERSION,'state_dict':network.state_dict(),
+                    'configuration':network.configuration,'metadata':receipt,
+                    'optimizer_state':optimizer.state_dict(),'torch_rng_state':torch.get_rng_state(),
+                    'numpy_rng_state':rng.bit_generator.state,'training_order':order.tolist()},temporary)
+        temporary.replace(destination)
+        receipt['checkpoint_sha256']=hashlib.sha256(destination.read_bytes()).hexdigest()
+        temporary_receipt=destination.with_suffix('.json.tmp')
+        write_json(temporary_receipt,receipt);temporary_receipt.replace(destination.with_suffix('.json'))
+        return receipt
+
     for step in range(len(history),steps):
         if step%len(order)==0:rng.shuffle(order)
         data=batch(int(order[step%len(order)]),rotation_augmentation)
@@ -100,42 +144,19 @@ def train(paths,marker_definition,output,steps=1000,points=5000,width=32,
                         **{k:float(v.detach()) for k,v in losses.items()}})
         if step==0 or (step+1)%100==0:
             print(f'ETCH adaptation step {step+1}/{steps}: loss {history[-1]["total"]:.4f}',flush=True)
+        if checkpoint_every and (step+1)%checkpoint_every==0:
+            snapshot=output.with_name(f'{output.stem}-step-{step+1:06d}{output.suffix}')
+            save(snapshot)
+            print(f'Saved checkpoint: {snapshot}',flush=True)
     validation=[];network.eval()
+    training_rng_state=rng.bit_generator.state
     with torch.inference_mode():
         for index in val_ids[:10]:
             data=batch(index,False);loss,_=supervised_loss(network(data['outer_points']),data)
+            if not torch.isfinite(loss):raise RuntimeError('Nonfinite validation loss')
             validation.append(float(loss))
-    receipt={'adapter':ADAPTER_VERSION,'architecture':'independent G60 encoder and XYZ PointTransformer-style scalar heads',
-        'official_etch_checkpoint_compatible':False,'upstream_commit_reviewed':UPSTREAM_COMMIT,
-        'initialized_from':'random; no pretrained ETCH/ArtEq/CAPE/4D-Dress weights',
-        'model_source_sha256':hashlib.sha256(Path(__file__).with_name('model.py').read_bytes()).hexdigest(),
-        'development_only':development or any(not r['training_ready'] for r in records),
-        'training_ready':False,'steps':steps,'points_per_step':points,'seed':seed,'device':str(device),
-        'learning_rate':learning_rate,'rotation_augmentation':rotation_augmentation,
-        'resumed_from':str(resume) if resume is not None else None,
-        'configuration':network.configuration,'marker_definition':definition,'history':history,
-        'training_body_hashes':sorted({records[i]['source_body_sha256'] for i in train_ids}),
-        'validation_body_hashes':sorted({records[i]['source_body_sha256'] for i in val_ids}),
-        'training_subject_ids':sorted({records[i]['subject_id'] for i in train_ids if records[i].get('subject_id')}),
-        'validation_subject_ids':sorted({records[i]['subject_id'] for i in val_ids if records[i].get('subject_id')}),
-        'training_pairs':[{ 'file':str(paths[i]),'npz_sha256':records[i]['npz_sha256']}
-                          for i in train_ids],
-        'marker_definition_sha256':marker_sha,
-        'validation_mean_multitask_loss':float(np.mean(validation)) if validation else None,
-        'body_fitting_accuracy_evaluated':False,'seconds':time.perf_counter()-started,
-        'limitations':['Compact backbone differs from the paper EPN/PointTransformer',
-            'Multitask loss is not a body reconstruction accuracy measurement',
-            'No unseen-subject accuracy claim from a development smoke run']}
-    output=Path(output);output.parent.mkdir(parents=True,exist_ok=True)
-    temporary=output.with_suffix(output.suffix+'.tmp')
-    torch.save({'adapter':ADAPTER_VERSION,'state_dict':network.state_dict(),
-                'configuration':network.configuration,'metadata':receipt,
-                'optimizer_state':optimizer.state_dict(),'torch_rng_state':torch.get_rng_state(),
-                'numpy_rng_state':rng.bit_generator.state,'training_order':order.tolist()},temporary)
-    temporary.replace(output)
-    receipt['checkpoint_sha256']=hashlib.sha256(output.read_bytes()).hexdigest()
-    write_json(output.with_suffix('.json'),receipt)
-    return receipt
+    rng.bit_generator.state=training_rng_state
+    return save(output,finished=True,validation=validation)
 
 
 def load_checkpoint(path,device='cpu',development=False):
@@ -152,6 +173,34 @@ def load_checkpoint(path,device='cpu',development=False):
     network=TightnessNetwork(**saved['configuration']).to(device)
     network.load_state_dict(saved['state_dict']);network.eval()
     return network,receipt
+
+
+def infer_points(network,points,context_points,device='cpu',seed=9):
+    """Keep neighbourhood density consistent with the training configuration.
+
+    The paper trains and evaluates with 5000 points. Small CPU experiments must
+    not train at 128 points and silently change to dense 5000-point kNN contexts.
+    Uniform full-body subsets cover every observation once; the last context is
+    padded with other observed points, without inventing geometry or targets.
+    """
+    points=np.asarray(points,dtype='f4');n=len(points)
+    if n<2 or context_points<2:raise ValueError('Inference contexts require at least two points')
+    size=min(n,context_points);rng=np.random.default_rng(seed);order=rng.permutation(n)
+    result={'vectors_inward':np.zeros((n,3),dtype='f4'),
+            'label_logits':np.zeros((n,network.configuration['markers']),dtype='f4'),
+            'confidence':np.zeros(n,dtype='f4')}
+    with torch.inference_mode():
+        for start in range(0,n,size):
+            primary=order[start:start+size];ids=primary
+            if len(ids)<size:
+                candidates=np.setdiff1d(np.arange(n),ids,assume_unique=True)
+                ids=np.r_[ids,rng.choice(candidates,size-len(ids),replace=False)]
+            prediction=network(torch.tensor(points[ids][None],device=device))
+            for key in result:
+                values=prediction[key][0,:len(primary)].cpu().numpy()
+                if not np.isfinite(values).all():raise ValueError('Network produced nonfinite values')
+                result[key][primary]=values
+    return result
 
 
 def predict(scan,checkpoint,output,count=5000,seed=9,device='cpu',development=False):
@@ -181,10 +230,10 @@ def predict(scan,checkpoint,output,count=5000,seed=9,device='cpu',development=Fa
         tested=len(vertices)
         observation_scope='supplied observed point cloud; no hidden body or visibility reconstruction added'
     center=surface.bounds.mean(0);observed=observed-center
-    with torch.inference_mode():
-        result=network(torch.tensor(observed[None],dtype=torch.float32,device=device))
-    vector=result['vectors_inward'][0].cpu().numpy();inner=observed+vector
-    labels=result['label_logits'][0].argmax(-1).cpu().numpy();confidence=result['confidence'][0].cpu().numpy()
+    context_points=checkpoint_receipt.get('points_per_step',len(observed))
+    result=infer_points(network,observed,context_points,device,seed)
+    vector=result['vectors_inward'];inner=observed+vector
+    labels=result['label_logits'].argmax(-1);confidence=result['confidence']
     markers,valid,support=aggregate_markers(inner,labels,confidence,network.configuration['markers'])
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
     # A failed rerun must not leave an old fitted body looking like this run's
@@ -201,6 +250,8 @@ def predict(scan,checkpoint,output,count=5000,seed=9,device='cpu',development=Fa
         'checkpoint_sha256':checkpoint_receipt['checkpoint_sha256'],
         'development_only':checkpoint_receipt.get('development_only',False),
         'points':len(observed),'candidate_points_tested':tested,'valid_markers':int(valid.sum()),
+        'neural_context_points':min(len(observed),context_points),
+        'neural_context_protocol':'uniform observed subsets matching training sample count',
         'observation_scope':observation_scope,
         'source':'actual native-network predictions; no body mesh used in prediction',
         'body_fit_status':'not_run','training_ready':False}

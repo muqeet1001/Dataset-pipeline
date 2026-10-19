@@ -36,6 +36,7 @@ def main(argv=None):
     train.add_argument('--learning-rate',type=float,default=1e-4)
     train.add_argument('--rotation-augmentation',action='store_true',help='Optional SO3 augmentation; disabled in released ETCH loader')
     train.add_argument('--resume',type=Path)
+    train.add_argument('--checkpoint-every',type=int,default=25)
     train.add_argument('--device',default='cpu')
     train.add_argument('--development',action='store_true')
     predict=sub.add_parser('predict')
@@ -61,6 +62,8 @@ def main(argv=None):
     evaluation.add_argument('--device',default='cpu')
     evaluation.add_argument('--development',action='store_true')
     evaluation.add_argument('--no-fit-body',action='store_true')
+    evaluation.add_argument('--yaw-degrees',type=float,default=0.)
+    evaluation.add_argument('--noise-mm',type=float,default=0.)
     args=parser.parse_args(argv)
     from ..avatar_clothing import load_body,write_json
     if args.command=='doctor':
@@ -94,13 +97,14 @@ def main(argv=None):
         paths=[args.pairs] if args.pairs.is_file() else sorted(args.pairs.glob('*.npz'))
         report=train(paths,args.markers,args.output,args.steps,args.points,args.width,args.device,args.development,
             learning_rate=args.learning_rate,rotation_augmentation=args.rotation_augmentation,
-            resume=args.resume,head_width=args.head_width)
+            resume=args.resume,head_width=args.head_width,checkpoint_every=args.checkpoint_every)
         print(json.dumps({k:v for k,v in report.items() if k not in ('history','marker_definition')},indent=2))
         return 0
     if args.command=='evaluate':
         from .evaluation import evaluate
         report=evaluate(args.pair,args.checkpoint,args.output,device=args.device,
-            development=args.development,input_body=args.input,mhr_model=args.mhr_model,fit_body=not args.no_fit_body)
+            development=args.development,input_body=args.input,mhr_model=args.mhr_model,fit_body=not args.no_fit_body,
+            yaw_degrees=args.yaw_degrees,noise_mm=args.noise_mm)
         print(json.dumps(report,indent=2))
         return 2 if report['body_fit_status'] in ('failed','needs_review') else 0
     if args.command=='predict':
