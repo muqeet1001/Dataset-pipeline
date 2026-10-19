@@ -1,0 +1,474 @@
+{
+  "date_local": "2026-10-19",
+  "implementation_commits": [
+    "ef95899",
+    "5c56e6a"
+  ],
+  "status": "Actual neural-to-MHR mesh produced; quality gate failed; development only",
+  "production_ready": false,
+  "official_paper_accuracy_reproduced": false,
+  "architecture_is_official_etch": false,
+  "unseen_subject_accuracy_evaluated": false,
+  "circumference_accuracy_evaluated": false,
+  "rgb_video_to_clothed_3d_reconstruction_implemented": false,
+  "restricted_etch_weights_or_dataset_examples_used": false,
+  "environment": {
+    "platform": "Windows, local CPU",
+    "cuda_available": false,
+    "torch": "2.10.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "trimesh": "4.12.2",
+    "potpourri3d": "1.4.0",
+    "ec2_gpu_executed": false
+  },
+  "source_review": {
+    "upstream_commit": "dc743bcd01e8616987de09ed8f222eff64f0f55c",
+    "paper": "https://boqian-li.github.io/ETCH/ETCH.pdf",
+    "review": "docs/etch-corrections.txt",
+    "changes": [
+      "Restore centered XYZ inputs and relative spatial attention in scalar heads",
+      "Default rotation augmentation off, matching released loader",
+      "Use a linear soft-class-mixture confidence head",
+      "Measure actual neural predictions separately from known-marker oracle",
+      "Match inference context size to the compact CPU training point count",
+      "Periodic resumable snapshots retain optimizer and sampling states"
+    ],
+    "differences": [
+      "Independent compact G60 encoder rather than released hierarchical EPN",
+      "Two compact scalar attention blocks rather than released multilevel PointTransformer",
+      "MHR neutral identity/similarity fitting rather than articulated SMPL",
+      "Independent native MHR markers and fresh weights",
+      "CPU context subsampling differs from published 5000-point training/inference"
+    ]
+  },
+  "automated_tests": {
+    "command": ".venv/Scripts/python.exe -m pytest -q",
+    "passed": 48,
+    "failed": 0,
+    "seconds": 36.29,
+    "etch_tests": 12,
+    "scope": [
+      "Occluded body surfaces cannot leak into observed input",
+      "Direction equivariance and pooled encoder invariance across all 60 group rotations",
+      "Finite multitask gradients and stable confidence voting",
+      "Subject ID and body-hash grouping across outfits, poses and renamed copies",
+      "Development-data, corrupt-pair and stale-output protections",
+      "Training resumes optimizer/random states from periodic snapshots",
+      "Inference preserves trained context size and covers every observation",
+      "Stress targets rotate consistently and do not enter the predicting network",
+      "Native neutral marker fitting recovers synthetic similarity/identity"
+    ],
+    "full_pipeline_rotation_invariance_claimed": false
+  },
+  "training": {
+    "adapter": "mhr-tightness-v2",
+    "model_source_sha256": "cef690570f1d239f67b2c3a4b2f1706e3a1f543aa95a5878ad69fbebb5486a29",
+    "checkpoint_sha256": "cd0e0020bc3901f41a74ccd7ae1b42a475773c543b1cb10e04e96fb1df76c2ca",
+    "configuration": {
+      "head_width": 64,
+      "markers": 86,
+      "neighbours_count": 12,
+      "radius": 0.4,
+      "width": 16
+    },
+    "run_status": "completed_training",
+    "steps": 1000,
+    "points_per_step": 512,
+    "training_segments": [
+      {
+        "first_step": 1,
+        "last_step": 600,
+        "learning_rate": 0.001,
+        "points_per_step": 128,
+        "rotation_augmentation": false
+      },
+      {
+        "first_step": 601,
+        "last_step": 1000,
+        "learning_rate": 0.0005,
+        "points_per_step": 512,
+        "rotation_augmentation": false
+      }
+    ],
+    "seconds": 346.72356389999993,
+    "training_body_hashes": [
+      "d200f62501854dc6f4ed3070a97b5df4e68d3203749b056ca2bd13f6999f3fad"
+    ],
+    "training_subject_ids": [
+      "ansur2_male_10027"
+    ],
+    "validation_body_hashes": [],
+    "validation_subject_ids": [],
+    "development_only": true,
+    "training_ready": false,
+    "rotation_augmentation": false,
+    "seed": 7
+  },
+  "loss": {
+    "first": 5.690764427185059,
+    "last": 0.7366795539855957,
+    "interpretation": "Training loss is not body or circumference accuracy"
+  },
+  "evaluation_data": {
+    "training_pair_sha256": "2b5040dd4e6ecae1d8d7410b4cd1017aeaa3cdfd3ca1228b10d5a53d26c6f088",
+    "resampled_pair_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+    "training_seed": 1,
+    "resampling_seed": 97,
+    "points_each": 5000,
+    "exact_duplicate_observed_positions": 0,
+    "closest_resampled_point_to_training_point_m": 0.00018516379869479448,
+    "same_body_and_outfit_surface": true,
+    "independent_people_or_outfits": false,
+    "input_scope": "Externally visible surface samples, not RGB reconstruction",
+    "scoring_body_scope": "Estimated MHR body fitted to stature and three section-perimeter proxies",
+    "garment_fit_status": "needs_review; collision/self-intersection/settling failures unresolved",
+    "model_input": "Observed clothed coordinates only; ground truth reserved for supervision/scoring"
+  },
+  "actual_neural_evaluations": {
+    "same_avatar_resampled": {
+      "body_fit_status": "needs_review",
+      "body_reconstruction": {
+        "alignment": "none; metric world-space errors, no Procrustes correction",
+        "height_error_mm": 22.029012955773865,
+        "predicted_height_m": 1.753971048044226,
+        "v2v_max_mm": 35.63113630408322,
+        "v2v_mean_mm": 15.804130411874402,
+        "v2v_p95_mm": 24.554482833536984,
+        "v2v_rmse_mm": 16.518662934530298
+      },
+      "checkpoint_sha256": "cd0e0020bc3901f41a74ccd7ae1b42a475773c543b1cb10e04e96fb1df76c2ca",
+      "checkpoint_steps": 1000,
+      "development_only": true,
+      "evaluation_scope": "training_subject_resampled_points",
+      "marker_p95_error_mm": 96.46728004758177,
+      "marker_rmse_mm": 56.58046939410945,
+      "missing_marker_ids": [
+        4,
+        31,
+        37,
+        38,
+        47,
+        48,
+        56
+      ],
+      "neural_context_points": 512,
+      "neural_context_protocol": "uniform observed subsets matching training sample count",
+      "pair_npz_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+      "points": {
+        "balanced_label_accuracy": 0.6770030945728891,
+        "confidence_mae": 0.13330399990081787,
+        "direction_evaluated_points": 3799,
+        "direction_mean_degrees_cloth_over_2mm": 30.56867027282715,
+        "label_accuracy": 0.7532,
+        "magnitude_mae_mm": 6.911431789398193,
+        "points": 5000,
+        "predicted_label_count": 79,
+        "vector_mean_error_mm": 10.099640846252441,
+        "vector_p95_error_mm": 26.782215118408203,
+        "vector_rmse_mm": 16.42395782470703
+      },
+      "source": "ACTUAL NEURAL PREDICTION; targets used only for scoring",
+      "stress_test": {
+        "gaussian_position_noise_std_mm": 0.0,
+        "yaw_degrees": 0.0
+      },
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "unseen_subject_accuracy_evaluated": false,
+      "valid_markers": 79,
+      "zero_identity_height_scaled_baseline": {
+        "parameters": "height and AABB center from observed input; no shape fitting",
+        "v2v_mean_mm": 24.98454738976443,
+        "v2v_rmse_mm": 25.252540322991127
+      }
+    },
+    "gaussian_noise_2mm": {
+      "body_fit_status": "needs_review",
+      "body_reconstruction": {
+        "alignment": "none; metric world-space errors, no Procrustes correction",
+        "height_error_mm": 33.129817996009336,
+        "predicted_height_m": 1.7428702430039906,
+        "v2v_max_mm": 44.57161438090264,
+        "v2v_mean_mm": 19.30349211632195,
+        "v2v_p95_mm": 28.612029150681803,
+        "v2v_rmse_mm": 19.968572473916424
+      },
+      "checkpoint_sha256": "cd0e0020bc3901f41a74ccd7ae1b42a475773c543b1cb10e04e96fb1df76c2ca",
+      "checkpoint_steps": 1000,
+      "development_only": true,
+      "evaluation_scope": "training_subject_resampled_points__stress_test",
+      "marker_p95_error_mm": 99.04143512976877,
+      "marker_rmse_mm": 57.85669456893633,
+      "missing_marker_ids": [
+        4,
+        31,
+        37,
+        38,
+        47,
+        48,
+        56
+      ],
+      "neural_context_points": 512,
+      "neural_context_protocol": "uniform observed subsets matching training sample count",
+      "pair_npz_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+      "points": {
+        "balanced_label_accuracy": 0.6735102562890826,
+        "confidence_mae": 0.1336481273174286,
+        "direction_evaluated_points": 4716,
+        "direction_mean_degrees_cloth_over_2mm": 46.56916046142578,
+        "label_accuracy": 0.75,
+        "magnitude_mae_mm": 6.807340621948242,
+        "points": 5000,
+        "predicted_label_count": 79,
+        "vector_mean_error_mm": 10.934361457824707,
+        "vector_p95_error_mm": 27.389026641845703,
+        "vector_rmse_mm": 16.792722702026367
+      },
+      "source": "ACTUAL NEURAL PREDICTION; targets used only for scoring",
+      "stress_test": {
+        "gaussian_position_noise_std_mm": 2.0,
+        "yaw_degrees": 0.0
+      },
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "unseen_subject_accuracy_evaluated": false,
+      "valid_markers": 79,
+      "zero_identity_height_scaled_baseline": {
+        "parameters": "height and AABB center from observed input; no shape fitting",
+        "v2v_mean_mm": 23.98041070090171,
+        "v2v_rmse_mm": 24.2760589436603
+      }
+    },
+    "yaw_90_degrees": {
+      "body_fit_status": "needs_review",
+      "body_reconstruction": {
+        "alignment": "none; metric world-space errors, no Procrustes correction",
+        "height_error_mm": 232.44579493827322,
+        "predicted_height_m": 1.5435542660617272,
+        "v2v_max_mm": 988.594619033967,
+        "v2v_mean_mm": 425.98978145478986,
+        "v2v_p95_mm": 944.7697632891462,
+        "v2v_rmse_mm": 520.7596864477434
+      },
+      "checkpoint_sha256": "cd0e0020bc3901f41a74ccd7ae1b42a475773c543b1cb10e04e96fb1df76c2ca",
+      "checkpoint_steps": 1000,
+      "development_only": true,
+      "evaluation_scope": "training_subject_resampled_points__stress_test",
+      "marker_p95_error_mm": 514.630329093394,
+      "marker_rmse_mm": 277.6515470282203,
+      "missing_marker_ids": [
+        3,
+        4,
+        6,
+        7,
+        9,
+        16,
+        17,
+        20,
+        30,
+        31,
+        37,
+        38,
+        43,
+        45,
+        46,
+        47,
+        48,
+        53,
+        54,
+        56,
+        57,
+        58,
+        59,
+        62,
+        66,
+        71,
+        75,
+        76,
+        78,
+        79,
+        84
+      ],
+      "neural_context_points": 512,
+      "neural_context_protocol": "uniform observed subsets matching training sample count",
+      "pair_npz_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+      "points": {
+        "balanced_label_accuracy": 0.03249791128615765,
+        "confidence_mae": 0.2981545627117157,
+        "direction_evaluated_points": 3799,
+        "direction_mean_degrees_cloth_over_2mm": 30.567859649658203,
+        "label_accuracy": 0.0312,
+        "magnitude_mae_mm": 13.494728088378906,
+        "points": 5000,
+        "predicted_label_count": 56,
+        "vector_mean_error_mm": 16.1219539642334,
+        "vector_p95_error_mm": 37.756412506103516,
+        "vector_rmse_mm": 21.775205612182617
+      },
+      "source": "ACTUAL NEURAL PREDICTION; targets used only for scoring",
+      "stress_test": {
+        "gaussian_position_noise_std_mm": 0.0,
+        "yaw_degrees": 90.0
+      },
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "unseen_subject_accuracy_evaluated": false,
+      "valid_markers": 55,
+      "zero_identity_height_scaled_baseline": {
+        "parameters": "height and AABB center from observed input; no shape fitting",
+        "v2v_mean_mm": 406.9148280256371,
+        "v2v_rmse_mm": 516.0970544476953
+      }
+    }
+  },
+  "body_fit_gate": {
+    "marker_rmse_limit_mm": 15,
+    "same_avatar_actual_residual_mm": 53.8710340844536,
+    "status": "needs_review",
+    "gate_relaxed": false,
+    "inspection_mesh_is_accepted_training_label": false
+  },
+  "earlier_experiments": {
+    "larger_500_step_attempt": "Interrupted before weights were saved; not a completed model",
+    "cpu_600_dense_context": {
+      "body_fit_status": "not_run",
+      "body_reconstruction": null,
+      "checkpoint_sha256": "1a2a6d171d1f1ddbe714dbbc92c238ccf60227fefcd3d9cb49caff54f9be3c6b",
+      "checkpoint_steps": 600,
+      "development_only": true,
+      "evaluation_scope": "training_subject_resampled_points",
+      "marker_p95_error_mm": 225.28501085570485,
+      "marker_rmse_mm": 137.3965912427419,
+      "missing_marker_ids": [
+        0,
+        2,
+        4,
+        30,
+        31,
+        37,
+        38,
+        47,
+        48,
+        54,
+        56,
+        57,
+        58,
+        75,
+        85
+      ],
+      "pair_npz_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+      "points": {
+        "balanced_label_accuracy": 0.3402311474306669,
+        "confidence_mae": 0.2174595445394516,
+        "direction_evaluated_points": 3799,
+        "direction_mean_degrees_cloth_over_2mm": 52.0323371887207,
+        "label_accuracy": 0.3702,
+        "magnitude_mae_mm": 10.292860984802246,
+        "points": 5000,
+        "predicted_label_count": 71,
+        "vector_mean_error_mm": 14.089080810546875,
+        "vector_p95_error_mm": 34.061073303222656,
+        "vector_rmse_mm": 19.504135131835938
+      },
+      "source": "ACTUAL NEURAL PREDICTION; targets used only for scoring",
+      "stress_test": {
+        "gaussian_position_noise_std_mm": 0.0,
+        "yaw_degrees": 0.0
+      },
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "unseen_subject_accuracy_evaluated": false,
+      "valid_markers": 71
+    },
+    "cpu_600_matched_context": {
+      "body_fit_status": "not_run",
+      "body_reconstruction": null,
+      "checkpoint_sha256": "1a2a6d171d1f1ddbe714dbbc92c238ccf60227fefcd3d9cb49caff54f9be3c6b",
+      "checkpoint_steps": 600,
+      "development_only": true,
+      "evaluation_scope": "training_subject_resampled_points",
+      "marker_p95_error_mm": 191.55321991396534,
+      "marker_rmse_mm": 106.72281219208993,
+      "missing_marker_ids": [
+        0,
+        2,
+        3,
+        4,
+        30,
+        31,
+        37,
+        47,
+        54,
+        57,
+        71,
+        75
+      ],
+      "neural_context_points": 128,
+      "neural_context_protocol": "uniform observed subsets matching training sample count",
+      "pair_npz_sha256": "e374ac75c0b52c92ac540397991f96db933a671304b6d6933ed7f96faab9f03a",
+      "points": {
+        "balanced_label_accuracy": 0.44188480211175174,
+        "confidence_mae": 0.17946398258209229,
+        "direction_evaluated_points": 3799,
+        "direction_mean_degrees_cloth_over_2mm": 34.32439422607422,
+        "label_accuracy": 0.5056,
+        "magnitude_mae_mm": 8.281538009643555,
+        "points": 5000,
+        "predicted_label_count": 74,
+        "vector_mean_error_mm": 11.329648971557617,
+        "vector_p95_error_mm": 30.651473999023438,
+        "vector_rmse_mm": 16.76202964782715
+      },
+      "source": "ACTUAL NEURAL PREDICTION; targets used only for scoring",
+      "stress_test": {
+        "gaussian_position_noise_std_mm": 0.0,
+        "yaw_degrees": 0.0
+      },
+      "subject_id": "ansur2_male_10027",
+      "training_ready": false,
+      "unseen_subject_accuracy_evaluated": false,
+      "valid_markers": 74
+    },
+    "v1_archive": "reports/etch-validation.json; known-marker oracle is not AI accuracy"
+  },
+  "viewer": {
+    "url": "http://127.0.0.1:9086/web/clothing-viewer/reconstruction.html",
+    "left": "Original development clothed mesh",
+    "right": "Official MHR mesh fitted to actual predicted markers",
+    "ground_truth_overlay_hidden_by_default": true,
+    "error_map_units": "millimetres, corresponding vertices in metric world space, no alignment",
+    "accepted_prediction_implied": false,
+    "module_node_syntax_check": "passed",
+    "manual_browser_checks": [
+      "Actual 1000-step mesh and measured metrics visible",
+      "Surface and per-vertex millimetre error map render",
+      "Ground-truth overlay and wireframe controls respond",
+      "Missing result shows no mesh, no stale metrics and no download link",
+      "Default view restored with reference overlay and wireframe off"
+    ]
+  },
+  "remaining_work": [
+    "Resolve garment physical acceptance failures",
+    "Generate diverse bodies and accepted tight/medium/loose garment pairs",
+    "Train and evaluate strictly held-out people and garments on GPU",
+    "Improve orientation handling and validate articulated MHR recovery",
+    "Test real reconstructed scans with calibrated metric scale",
+    "Validate anatomical circumference extraction against tape measurements",
+    "Compare independent compact architecture against the released architecture"
+  ],
+  "code_sha256": {
+    "pipeline/etch/__init__.py": "01af5be3c439c8015778e38e512f0666e0890baab9436e91549926eadfe6bc9a",
+    "pipeline/etch/__main__.py": "04c5ef6298ef17f3b3533c98684c4b61d58310eb833920ead27df51020d71071",
+    "pipeline/etch/body_fit.py": "b0a88beee2d0853d81ae28bfc6c3601de30eba4721ce04e889ba8c8d0ec9ea6d",
+    "pipeline/etch/evaluation.py": "c48823c08a6f32974341baa716630fe4788f1236face6ad193deac4faf36c3cb",
+    "pipeline/etch/geometry.py": "7b397b60342bc71fe305219513a79a5429b53014d54069066d5caef9b6248559",
+    "pipeline/etch/model.py": "cef690570f1d239f67b2c3a4b2f1706e3a1f543aa95a5878ad69fbebb5486a29",
+    "pipeline/etch/prepare.py": "7fd336af07090b0146608cc97be28f29e991745289ab81a2e9d40cb0ed5d900d",
+    "pipeline/etch/runtime.py": "4c454970f048791250b7537fc3c0131a9eef2b81b4d79d86407fec230539148c",
+    "tests/test_etch.py": "66986f13bbc5a8ab055143be42cf05549a7b07f1a7f07d2895fb8ef122d357ca",
+    "web/clothing-viewer/reconstruction.html": "1bc6118a8051c571bdb11ca9abb26ba2e04c4508558cb0d1d8e40f62c3c7bfb8",
+    "configs/mhr-markers-86.json": "4fc6c31bcb1df93014fe724a9d847dffc82bde7046584db950c741a39fa1e376"
+  },
+  "inspection_mesh_sha256": "33a328035719b80f10a65ccfbdb730c3fd2ca65095674f07f657f12985c69a77"
+}

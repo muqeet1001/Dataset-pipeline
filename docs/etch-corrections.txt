@@ -1,0 +1,133 @@
+ETCH V2: SOURCE COMPARISON AND ACTUAL NEURAL TEST
+19 October 2026
+
+Why the original smoke was insufficient
+  The previous 80-step, one-body run predicted one marker label. Passing unit
+  tests did not demonstrate body reconstruction. Its known-marker oracle test
+  checked the MHR fitter, not an AI prediction. Those receipts remain historical.
+
+Released source reviewed again
+  Commit dc743bcd01e8616987de09ed8f222eff64f0f55c:
+  https://github.com/boqian-li/ETCH/blob/dc743bcd01e8616987de09ed8f222eff64f0f55c/src/models/pointtransformer_seg.py
+  https://github.com/boqian-li/ETCH/blob/dc743bcd01e8616987de09ed8f222eff64f0f55c/src/data_utils/GT_dataloader.py
+  https://github.com/boqian-li/ETCH/blob/dc743bcd01e8616987de09ed8f222eff64f0f55c/src/train.py
+  https://github.com/boqian-li/ETCH/blob/dc743bcd01e8616987de09ed8f222eff64f0f55c/src/models/fit_SMPL.py
+
+Corrections made
+  1. ETCH's scalar heads receive pooled invariant features AND XYZ coordinates.
+     They also use relative XYZ in point attention. V1 removed that spatial
+     information, incorrectly treating the complete heads as invariant. V2
+     restores centered XYZ and relative spatial attention, with larger heads.
+  2. Rotation augmentation is commented out in the released dataset loader.
+     V2 disables it by default. --rotation-augmentation explicitly opts in.
+     Direction equivariance and encoder-feature invariance are tested; full
+     scalar-head rotation invariance is no longer asserted incorrectly.
+  3. Released confidence prediction is a soft class mixture of linear scores.
+     V2 follows this instead of applying a sigmoid to each class. Voting rejects
+     nonpositive scores and retains stable top-3, confidence^20 aggregation.
+  4. New evaluate command measures actual predictions against separate targets:
+     vector/magnitude/direction errors, label accuracy, marker errors, and
+     corresponding-vertex body error in millimetres. Ground truth is supplied
+     only to scoring; the network receives observed clothed points, and body
+     fitting receives only predicted markers.
+  5. A height-scaled zero-identity MHR baseline is scored alongside the network.
+     Its parameters come from observed height/AABB center, not the target body.
+     This helps reveal a plausible-looking average body which adds little value.
+  6. Training can resume with Adam and random-sampling states. V1 checkpoints
+     are rejected by the v2 architecture/version checks. Pair geometry format
+     remains compatible; native marker definitions and vector sign are unchanged.
+  7. Training now saves periodic model/optimizer/random-state snapshots every
+     25 steps by default. Each receipt identifies the actual completed step,
+     requested total and training segments. Validation sampling does not change
+     the random stream used when training resumes.
+  8. Inference uses uniformly sampled full-body contexts matching the training
+     point count. Training on 128 points and inferring with a single 5000-point
+     kNN context silently changed neighbourhood density and damaged predictions.
+     Every observed point is still evaluated; the last context is padded only
+     with other observations. This compact CPU protocol differs from the paper,
+     which trains and evaluates on 5000 points together.
+
+Conformance limits that remain
+  The compact G60 encoder is independent code, not the released hierarchical
+  EPN encoder. The scalar heads now follow the spatial attention formulation,
+  but remain two compact blocks per task, not the released five-level
+  PointTransformer encoder/decoder with [2,3,4,6,3] block counts.
+  Fitting uses official MHR at its native neutral pose, first 20 identity
+  dimensions and global similarity. The released system fits articulated SMPL.
+  Native MHR geodesic markers differ from the paper's SMPL marker topology.
+  Nonnegative magnitude and masking of undefined zero-distance directions are
+  explicit stability choices. No released ETCH weights/dataset examples are used.
+  Thus this is still a method adaptation, not a replication of published results.
+
+Meaningful local experiment
+  Train on the 5000-point development pair from the supplied avatar. Evaluate
+  on a new independently sampled 5000-point pair, seed 97, from the SAME avatar.
+  The test pair is sampled separately from the training input archive. This is
+  a resampling test of the same surface and known subject, not held-out-person
+  generalization or an independent outfit test.
+  The existing garment fit fails physical checks, so all data and models stay
+  development-only. A successful reconstruction does not approve those garments.
+  Local machine: CPU, no CUDA. Completed 600 steps with 128 points, width 16,
+  head width 64, learning rate 0.001; resumed for steps 601-1000 with 512 points
+  and learning rate 0.0005. Cumulative training time was 346.72 seconds, including
+  checkpoint saves. Released training uses 5000 points and a default learning
+  rate of 0.0001. These timings are not a paper benchmark.
+
+Actual neural results, 1000-step checkpoint
+  Separately resampled same-avatar input, 5000 observations, 512-point contexts:
+    Mean corresponding-vertex body error: 15.804 mm; RMSE: 16.519 mm.
+    Height error: 22.029 mm; reconstructed stature: 175.397 cm vs 177.600 cm.
+    79/86 marker labels; marker error against the known body: 56.580 mm RMSE.
+    Fitted-body residual to predicted markers: 53.871 mm RMSE, above the
+    unchanged 15 mm quality gate. Status is NEEDS_REVIEW, not accepted.
+    Height-scaled zero-identity baseline mean body error: 24.985 mm.
+    Marker-label classification accuracy: 75.32%; this is NOT body-measurement
+    accuracy or a percentage that can be applied to an 89 cm chest.
+  Adding independent 2 mm Gaussian noise to observed coordinates:
+    Mean body error: 19.303 mm; height error: 33.130 mm; NEEDS_REVIEW.
+  Rotating the same observed surface 90 degrees around the vertical axis:
+    Mean body error: 425.990 mm; 55/86 labels; NEEDS_REVIEW.
+    The compact scalar heads trained on one orientation do not generalize to
+    this rotation. Direction-branch group equivariance is insufficient to make
+    the entire trained reconstruction pipeline rotation invariant.
+  These tests establish an actual neural-to-MHR mesh path and expose its limits.
+  They do not validate new people, real scans, circumference errors, commercial
+  sizing, realistic garment fitting or the published ETCH accuracy.
+  A larger 500-step experiment was interrupted before saving weights. It is
+  recorded as interrupted, not as a successful trained model. Earlier 600-step
+  point-density experiments remain available as failed/development receipts.
+
+Commands, from the repository root
+  python run_etch.py prepare --fit-folder runs/reference-look/MHR-male-10027/reference-regular --output runs/etch/corrected/resampled/reference-regular.npz --points 5000 --anchors 6000 --seed 97 --development
+  python run_etch.py train --pairs runs/etch/full-target-check/reference-regular.npz --output runs/etch/corrected/cpu-model.pt --steps 600 --points 128 --width 16 --head-width 64 --learning-rate 0.001 --checkpoint-every 25 --development
+  python run_etch.py train --pairs runs/etch/full-target-check/reference-regular.npz --output runs/etch/corrected/cpu-model-1000.pt --resume runs/etch/corrected/cpu-model.pt --steps 1000 --points 512 --learning-rate 0.0005 --checkpoint-every 25 --development
+  python run_etch.py evaluate --pair runs/etch/corrected/resampled/reference-regular.npz --checkpoint runs/etch/corrected/cpu-model-1000.pt --output runs/etch/corrected/evaluated --development
+  python run_etch.py evaluate --pair runs/etch/corrected/resampled/reference-regular.npz --checkpoint runs/etch/corrected/cpu-model-1000.pt --output runs/etch/corrected/noise-2mm --noise-mm 2 --development
+  python run_etch.py evaluate --pair runs/etch/corrected/resampled/reference-regular.npz --checkpoint runs/etch/corrected/cpu-model-1000.pt --output runs/etch/corrected/yaw-90 --yaw-degrees 90 --development
+  python scripts/serve_clothing.py --port 9086
+  http://127.0.0.1:9086/web/clothing-viewer/reconstruction.html
+
+  To continue training, use the SAME pair path and --resume CHECKPOINT. --steps
+  is the total desired step count, including earlier steps; it must increase.
+  Model configuration is restored from the checkpoint. Keep the augmentation
+  setting unchanged. Optimizer state is retained; --learning-rate sets the rate
+  for the resumed session. Float32 SVD may have tiny numerical differences;
+  bit-identical internal null-space parameters are not promised.
+  Evaluation exits with code 2 when the fitted body needs review. Its mesh is
+  preserved for inspection and must not be treated as an accepted training label.
+
+How to read the viewer
+  Left: original clothed input, with its unresolved fit defects preserved.
+  Right: mesh fitted from actual neural marker predictions, when available.
+  Body error map: per-vertex distance to the known body, in metric world space,
+  with no alignment performed to reduce error. The optional blue ground-truth
+  overlay is a scoring/inspection aid; it is off by default. Turntable rotates
+  the view and is not a dynamic-pose or fabric-physics demonstration.
+
+Next accuracy requirements
+  Diverse accepted garment/body pairs, unseen-subject tests, loose/tight and
+  unseen-garment tests, articulated MHR fitting, real-scan tests, and GPU runs.
+  Measure body errors and height errors without silently aligning away scale
+  or translation mistakes. Keep physical garment acceptance separate from body
+  reconstruction acceptance. Current actual receipts are summarized in
+  reports/etch-corrected-validation.json.

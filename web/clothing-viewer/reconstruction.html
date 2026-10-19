@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MHR · Neural reconstruction check</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#ecebe7;color:#293936;font:14px 'Segoe UI',Arial,sans-serif}
+header{padding:20px 26px 14px;background:#fafaf7;border-bottom:1px solid #d4d9d3}.eyebrow{font-size:10px;letter-spacing:2px;color:#617f74}h1{font-size:24px;font-weight:500;letter-spacing:-.6px;margin:6px 0 10px}.status{font-size:12px;line-height:1.6;color:#826129}#metrics{display:flex;gap:30px;flex-wrap:wrap;margin:13px 0 5px}.metric strong{font-size:21px;font-weight:500;display:block}.metric span{font-size:10px;color:#6f817a;letter-spacing:.6px}.controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:14px}button,a.button{font:inherit;font-size:11px;border:1px solid #b6c6bc;border-radius:5px;padding:7px 10px;background:#fff;color:#37584b;cursor:pointer;text-decoration:none}button.active{background:#3e6c5a;color:white}.check{font-size:11px;margin-left:6px}input{vertical-align:middle}#viewport{position:relative;height:calc(100vh - 218px);min-height:360px;overflow:hidden}.labels{position:absolute;inset:15px 0 auto;display:grid;grid-template-columns:1fr 1fr;pointer-events:none;z-index:1}.labels div{margin:0 15px;background:#fafaf3e8;border:1px solid #cad4ca;border-radius:5px;padding:8px 10px;font-size:11px;line-height:1.5}.labels strong{display:block;font-weight:500}.labels span{font-size:10px;color:#758576}#legend{display:none;position:absolute;bottom:40px;right:20px;width:160px;font-size:10px;color:#5c6d61}.gradient{height:6px;margin:6px 0;background:linear-gradient(90deg,#2687a5,#84b87a,#e6bc5d,#c6534e)}.scale{display:flex;justify-content:space-between}.caption{position:absolute;left:20px;bottom:14px;color:#7b887e;font-size:11px}.empty{position:absolute;inset:40% 15% auto;text-align:center;font-size:14px;line-height:1.8;color:#6a7970}.foot{font-size:11px;color:#718176;padding:12px 24px;background:#fafaf7;line-height:1.6}canvas{display:block}.foot a{color:#40695b}@media(max-width:650px){header{padding:15px}h1{font-size:20px}#metrics{gap:20px}#viewport{height:calc(100vh - 265px)}.check{margin-left:0}.metric strong{font-size:18px}.labels div{margin:0 8px;padding:7px}.foot{padding:10px 15px}}
+</style>
+<style>
+body{height:100dvh;display:flex;flex-direction:column}header,.foot{flex-shrink:0}
+#viewport{height:auto;flex:1;min-height:300px}.empty{inset:40% 3% auto 53%}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+<header>
+ <div class="eyebrow">ETCH METHOD · MHR ADAPTATION · MEASURED OUTPUT</div>
+ <h1>Clothing in. Body reconstruction out.</h1>
+ <div id="status" class="status">Loading the actual neural reconstruction…</div>
+ <div id="metrics">
+  <div class="metric"><strong id="v2v">—</strong><span>MEAN BODY ERROR</span></div>
+  <div class="metric"><strong id="height">—</strong><span>HEIGHT ERROR</span></div>
+  <div class="metric"><strong id="markers">—</strong><span>PREDICTED MARKERS</span></div>
+ </div>
+ <div class="controls">
+  <button id="surface" class="active">Surface</button><button id="errors">Body error map</button>
+  <button id="reload">Reload result</button>
+  <label class="check"><input id="overlay" type="checkbox">Ground-truth overlay</label>
+  <label class="check"><input id="wire" type="checkbox">Wireframe</label>
+  <label class="check"><input id="turntable" type="checkbox">Turntable</label>
+  <a id="download" class="button" hidden download>Mesh OBJ ↓</a>
+ </div>
+</header>
+<section id="viewport">
+ <div class="labels"><div><strong>Clothed input</strong><span>Current development garment fit</span></div><div><strong>Neural markers → MHR body</strong><span id="scope">Actual prediction required</span></div></div>
+ <div id="empty" class="empty" hidden>No reconstructed mesh is available yet.<br>The viewer never substitutes the known body for a failed prediction.</div>
+ <div id="legend">Vertex error against known body<div class="gradient"></div><div class="scale"><span>0 mm</span><span>15</span><span>30+</span></div></div>
+ <div class="caption">Drag to rotate both · Scroll to zoom · Static pose</div>
+</section>
+<div class="foot">The original body is used only to score predictions and for the optional blue overlay. A successful test on the training avatar does not establish accuracy on new people. <a href="./etch.html">Inspect training targets →</a></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+const folder=new URLSearchParams(location.search).get('result')||'/runs/etch/corrected/evaluated';
+const viewport=document.querySelector('#viewport');
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setScissorTest(true);
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
+viewport.append(renderer.domElement);
+function studio(){
+ const scene=new THREE.Scene();scene.background=new THREE.Color(0xecebe7);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x74806d,2.1));
+ const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(2.8,5,3);key.castShadow=true;
+ key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-2;key.shadow.camera.right=2;
+ key.shadow.camera.top=3;key.shadow.camera.bottom=-1;key.shadow.normalBias=.003;scene.add(key);
+ const fill=new THREE.DirectionalLight(0xd6e5ed,1.2);fill.position.set(-3,2,-2);scene.add(fill);
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.ShadowMaterial({opacity:.13}));
+ floor.rotation.x=-Math.PI/2;floor.position.y=-.025;floor.receiveShadow=true;scene.add(floor);
+ return scene;
+}
+const left=studio(),right=studio();
+const camera=new THREE.PerspectiveCamera(34,1,.01,50);camera.position.set(1.5,1.25,3.8);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,.89,0);
+controls.enableDamping=true;controls.minDistance=1;controls.maxDistance=6;
+const leftGroup=new THREE.Group(),rightGroup=new THREE.Group();left.add(leftGroup);right.add(rightGroup);
+let predicted,truth,report,errorMode=false;
+function geometry(positions,faces){
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions.flat(),3));
+ g.setIndex(faces.flat());g.computeVertexNormals();return g;
+}
+function clear(group){group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});group.clear()}
+function errorColor(mm){
+ const stops=[0x2687a5,0x84b87a,0xe6bc5d,0xc6534e].map(c=>new THREE.Color(c));
+ const value=Math.max(0,Math.min(2.999,mm/10)),index=Math.floor(value);
+ return stops[index].clone().lerp(stops[index+1],value-index);
+}
+function update(){
+ if(predicted){predicted.material.vertexColors=errorMode;predicted.material.color.set(errorMode?0xffffff:0xc6b49e);
+  predicted.material.wireframe=document.querySelector('#wire').checked;predicted.material.needsUpdate=true}
+ if(truth)truth.visible=document.querySelector('#overlay').checked;
+ document.querySelector('#legend').style.display=errorMode?'block':'none';
+ document.querySelector('#errors').classList.toggle('active',errorMode);
+ document.querySelector('#surface').classList.toggle('active',!errorMode);
+}
+async function json(path){const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw Error('No completed evaluation result yet');return response.json()}
+async function load(){
+ document.querySelector('#status').textContent='Loading measured results…';
+ try{
+  report=await json(folder+'/evaluation.json');
+  if(!report.body_reconstruction)throw Error(report.body_fit_error||'No neural body mesh was produced');
+  const body=await json(folder+'/body-preview.json');
+  if(body.checkpoint_sha256!==report.checkpoint_sha256||body.pair_npz_sha256!==report.pair_npz_sha256)
+   throw Error('Result files belong to different runs');
+  clear(rightGroup);predicted=new THREE.Mesh(geometry(body.positions,body.faces),new THREE.MeshStandardMaterial({color:0xc6b49e,roughness:.76,metalness:0}));
+  predicted.castShadow=true;predicted.receiveShadow=true;
+  const colors=body.vertex_error_mm.flatMap(mm=>errorColor(mm).toArray());
+  predicted.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));rightGroup.add(predicted);
+  truth=new THREE.Mesh(geometry(body.ground_truth_positions,body.faces),new THREE.MeshBasicMaterial({color:0x377da3,wireframe:true,transparent:true,opacity:.16,depthWrite:false}));
+  truth.visible=false;rightGroup.add(truth);
+  const result=report.body_reconstruction;
+  document.querySelector('#v2v').textContent=result.v2v_mean_mm.toFixed(1)+' mm';
+  document.querySelector('#height').textContent=result.height_error_mm.toFixed(1)+' mm';
+  document.querySelector('#markers').textContent=report.valid_markers+'/86';
+  document.querySelector('#scope').textContent=report.evaluation_scope.replaceAll('_',' ')+' · '+report.checkpoint_steps+' training steps';
+  document.querySelector('#status').textContent=(report.body_fit_status==='neutral_marker_fit_passed'?'Neutral marker fit passed':'Fit needs review')+' · '+(report.unseen_subject_accuracy_evaluated?'Unseen-subject test':'Same-avatar development test')+' · Clothing remains unvalidated';
+  document.querySelector('#download').href=folder+'/predicted-mhr.obj';document.querySelector('#download').hidden=false;
+  document.querySelector('#empty').hidden=true;update();window.reconstructionResultLoaded=true;
+ }catch(error){
+  clear(rightGroup);predicted=null;truth=null;
+  document.querySelector('#empty').hidden=false;document.querySelector('#status').textContent=error.message;
+  for(const id of ['v2v','height','markers'])document.querySelector('#'+id).textContent='—';
+  document.querySelector('#scope').textContent='Actual prediction required';
+  document.querySelector('#legend').style.display='none';
+  document.querySelector('#download').hidden=true;window.reconstructionResultLoaded=false;
+ }
+}
+const input=await new GLTFLoader().loadAsync('/runs/reference-look/MHR-male-10027/reference-regular/scene.glb');
+input.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});leftGroup.add(input.scene);
+document.querySelector('#surface').onclick=()=>{errorMode=false;update()};
+document.querySelector('#errors').onclick=()=>{errorMode=true;update()};
+document.querySelector('#reload').onclick=load;
+for(const id of ['overlay','wire'])document.querySelector('#'+id).onchange=update;
+function resize(){renderer.setSize(viewport.clientWidth,viewport.clientHeight);camera.aspect=viewport.clientWidth/2/viewport.clientHeight;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(viewport);resize();await load();
+let previous=0;renderer.setAnimationLoop(now=>{
+ if(now-previous<40)return;previous=now;controls.update();
+ if(document.querySelector('#turntable').checked){leftGroup.rotation.y+=.004;rightGroup.rotation.y=leftGroup.rotation.y}
+ const w=viewport.clientWidth,h=viewport.clientHeight,half=Math.floor(w/2);
+ renderer.setViewport(0,0,half,h);renderer.setScissor(0,0,half,h);renderer.render(left,camera);
+ renderer.setViewport(half,0,w-half,h);renderer.setScissor(half,0,w-half,h);renderer.render(right,camera);
+});
+</script>
+</body></html>

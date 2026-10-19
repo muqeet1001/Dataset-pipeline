@@ -33,6 +33,20 @@ actual validation scope. The current failed clothing sample remains development-
 normal training refuses it. Articulated recovery and unseen-subject accuracy
 are not validated.
 
+The v2 correction restores XYZ spatial information in the scalar heads and the
+released loader's default of no rotation augmentation. `run_etch.py evaluate`
+scores real neural predictions, marker errors and body errors in millimetres;
+`web/clothing-viewer/reconstruction.html` compares the actual fitted mesh with
+the input and offers an error map. See `docs/etch-corrections.txt` for the source
+comparison, resampling experiment and remaining architecture differences.
+The completed 1000-step CPU test produced a mesh with 15.8 mm mean body error
+on separately sampled points from the same training avatar. It still fails the
+marker-fit gate, and the 90-degree rotation test fails badly. This is not a
+validated sizing model. Actual results and failures are recorded in
+`reports/etch-corrected-validation.json`.
+
+![Actual neural reconstruction from the training avatar; fit still needs review](reports/etch-corrected-preview.png)
+
 The earlier body-shell prototype passed numerical checks but failed visual review.
 Its archived comparison is shown below; it is not a claim of realistic fabric fit.
 
